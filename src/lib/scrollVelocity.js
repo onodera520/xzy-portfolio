@@ -5,12 +5,14 @@ export function scrollDisplacement({
   rowIndex,
   direction,
 }) {
-  if (!deltaMs || !velocity) return 0;
+  if (!deltaMs) return 0;
 
   const rowDirection = rowIndex % 2 === 0 ? -1 : 1;
-  const speedFactor = 1 + Math.abs(scrollVelocity) / 1000;
+  const seconds = deltaMs / 1000;
+  const idleDistance = Math.abs(velocity) * seconds;
+  const scrollDistance = Math.abs(scrollVelocity) * seconds;
 
-  return rowDirection * direction * velocity * speedFactor * (deltaMs / 1000);
+  return rowDirection * direction * (idleDistance + scrollDistance);
 }
 
 export function resolveScrollDirection(scrollVelocity, previousDirection = 1) {

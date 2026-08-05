@@ -5,7 +5,6 @@ import {
   useMotionValue,
   useReducedMotion,
   useScroll,
-  useSpring,
   useVelocity,
   useTransform,
 } from "motion/react";
@@ -45,8 +44,6 @@ function VelocityRow({
   rowIndex,
   scrollContainerRef,
   velocity,
-  damping,
-  stiffness,
   numCopies,
   className,
 }) {
@@ -60,10 +57,6 @@ function VelocityRow({
     : {};
   const { scrollY } = useScroll(scrollOptions);
   const rawScrollVelocity = useVelocity(scrollY);
-  const smoothScrollVelocity = useSpring(rawScrollVelocity, {
-    damping,
-    stiffness,
-  });
 
   const x = useTransform(baseX, (value) => {
     if (!copyWidth) return "0px";
@@ -75,7 +68,7 @@ function VelocityRow({
 
     const currentVelocity = Math.max(
       -2400,
-      Math.min(2400, smoothScrollVelocity.get()),
+      Math.min(2400, rawScrollVelocity.get()),
     );
     directionRef.current = resolveScrollDirection(
       currentVelocity,
@@ -116,8 +109,6 @@ export default function ScrollVelocity({
   texts = [],
   velocity = 36,
   className = "",
-  damping = 46,
-  stiffness = 280,
   numCopies = 6,
 }) {
   return (
@@ -125,12 +116,10 @@ export default function ScrollVelocity({
       {texts.map((text, index) => (
         <VelocityRow
           className={className}
-          damping={damping}
           key={index}
           numCopies={numCopies}
           rowIndex={index}
           scrollContainerRef={scrollContainerRef}
-          stiffness={stiffness}
           velocity={velocity}
         >
           {text}

@@ -241,6 +241,7 @@ export default function AccordionGallery({
                   decoding="async"
                   width="1920"
                   height="1080"
+                  style={item.objectPosition ? { objectPosition: item.objectPosition } : undefined}
                 />
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />

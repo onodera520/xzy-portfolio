@@ -7,22 +7,55 @@ import { CaseOtherLink } from "./components/CaseOtherLink.jsx";
 import BlurText from "./components/BlurText.jsx";
 import FadeContent from "./components/FadeContent.jsx";
 import SoftAurora from "./components/SoftAurora.jsx";
+import SpecularButton from "./components/SpecularButton.jsx";
+import BorderGlow from "./components/BorderGlow.jsx";
+import PillNav from "./components/PillNav.jsx";
 import { getProject, projectGalleryItems } from "./data/projects.js";
+
+export function scrollToSection(
+  sectionId,
+  documentRoot = typeof document === "undefined" ? null : document,
+) {
+  const section = documentRoot?.getElementById(sectionId);
+  if (!section) return false;
+
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
 
 function Navigation({ homeLinks = false, inverted = false }) {
   const anchor = homeLinks ? "#" : "/#";
+  const items = [
+    { label: "作品", href: `${anchor}work` },
+    { label: "关于", href: `${anchor}about` },
+    { label: "互动实验", href: `${anchor}lab` },
+    { label: "联系", href: `${anchor}contact` },
+  ];
 
   return (
     <header className={`site-nav${inverted ? " site-nav-solid" : ""}`}>
-      <div className="nav-inner shell">
-        <a className="wordmark" href="/" aria-label="XZY 作品集首页">XZY</a>
-        <nav aria-label="主导航">
-          <a href={`${anchor}work`}>作品</a>
-          <a href={`${anchor}about`}>关于</a>
-          <a href={`${anchor}lab`}>互动实验</a>
-          <a href={`${anchor}contact`}>联系</a>
-        </nav>
-      </div>
+      <BorderGlow
+        as="div"
+        className="site-nav-glow"
+        edgeSensitivity={28}
+        glowColor="210 90 74"
+        backgroundColor="#050505"
+        borderRadius={22}
+        glowRadius={28}
+        glowIntensity={0.78}
+        coneSpread={24}
+        fillOpacity={0.2}
+        animated
+        colors={["#8db9ef", "#c084fc", "#75e6da"]}
+      >
+        <div className="nav-inner shell">
+          <a className="wordmark" href="/" aria-label="XZY 作品集首页">XZY</a>
+          <PillNav
+            items={items}
+            activeHref={homeLinks ? undefined : `${anchor}work`}
+          />
+        </div>
+      </BorderGlow>
     </header>
   );
 }
@@ -74,10 +107,34 @@ function HomePage() {
                 threshold={0}
                 rootMargin="0px"
               />
+              <FadeContent className="home-reveal hero-cta-reveal" duration={1.1} delay={0.26}>
+                <div className="hero-cta">
+                  <SpecularButton
+                    size="lg"
+                    radius={18}
+                    tint="#ffffff"
+                    tintOpacity={0.08}
+                    blur={10}
+                    textColor="#ffffff"
+                    lineColor="#ffffff"
+                    baseColor="#525252"
+                    intensity={1.2}
+                    shineSize={10}
+                    shineFade={40}
+                    thickness={1}
+                    speed={0.28}
+                    followMouse
+                    proximity={280}
+                    autoAnimate
+                    onClick={() => scrollToSection("work")}
+                  >
+                    查看作品
+                  </SpecularButton>
+                </div>
+              </FadeContent>
               <FadeContent className="home-reveal" duration={1.1} delay={0.32}>
                 <div className="hero-bottom">
                   <p>关注用户研究、产品逻辑与可落地的体验表达。</p>
-                  <a className="button button-light" href="#work">查看作品 <span aria-hidden="true">↘</span></a>
                 </div>
               </FadeContent>
             </div>

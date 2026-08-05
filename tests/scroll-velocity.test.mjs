@@ -16,7 +16,7 @@ test("two marquee rows move oppositely and reverse with scroll direction", () =>
       rowIndex: 0,
       direction: 1,
     }),
-    -1.024,
+    -10.24,
   );
   assert.equal(
     scrollDisplacement({
@@ -26,7 +26,7 @@ test("two marquee rows move oppositely and reverse with scroll direction", () =>
       rowIndex: 1,
       direction: 1,
     }),
-    1.024,
+    10.24,
   );
   assert.equal(
     scrollDisplacement({
@@ -36,7 +36,7 @@ test("two marquee rows move oppositely and reverse with scroll direction", () =>
       rowIndex: 0,
       direction: -1,
     }),
-    1.024,
+    10.24,
   );
   assert.equal(
     scrollDisplacement({
@@ -46,7 +46,17 @@ test("two marquee rows move oppositely and reverse with scroll direction", () =>
       rowIndex: 1,
       direction: -1,
     }),
-    -1.024,
+    -10.24,
+  );
+  assert.equal(
+    scrollDisplacement({
+      scrollVelocity: 600,
+      deltaMs: 16,
+      velocity: 0,
+      rowIndex: 0,
+      direction: 1,
+    }),
+    -9.6,
   );
 });
 

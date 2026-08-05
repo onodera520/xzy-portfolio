@@ -40,20 +40,45 @@ function easeInCubic(value) {
   return value ** 3;
 }
 
-function animateValue({ start = 0, end = 100, duration = 1000, delay = 0, ease = easeOutCubic, onUpdate, onEnd }) {
-  const startTime = performance.now() + delay;
+export function animateValue(
+  { start = 0, end = 100, duration = 1000, delay = 0, ease = easeOutCubic, onUpdate, onEnd },
+  scheduler = {
+    now: () => performance.now(),
+    setTimeout: (callback, wait) => setTimeout(callback, wait),
+    clearTimeout: (id) => clearTimeout(id),
+    requestAnimationFrame: (callback) => requestAnimationFrame(callback),
+    cancelAnimationFrame: (id) => cancelAnimationFrame(id),
+  },
+) {
+  const startTime = scheduler.now() + delay;
+  let timerId;
+  let frameId;
+  let cancelled = false;
+
   const tick = () => {
-    const elapsed = performance.now() - startTime;
+    if (cancelled) return;
+    const elapsed = scheduler.now() - startTime;
     const progress = Math.min(elapsed / duration, 1);
     onUpdate(start + ((end - start) * ease(progress)));
-    if (progress < 1) requestAnimationFrame(tick);
+    if (progress < 1) frameId = scheduler.requestAnimationFrame(tick);
     else onEnd?.();
   };
-  setTimeout(() => requestAnimationFrame(tick), delay);
+
+  timerId = scheduler.setTimeout(() => {
+    timerId = undefined;
+    if (!cancelled) frameId = scheduler.requestAnimationFrame(tick);
+  }, delay);
+
+  return () => {
+    cancelled = true;
+    if (timerId !== undefined) scheduler.clearTimeout(timerId);
+    if (frameId !== undefined) scheduler.cancelAnimationFrame(frameId);
+  };
 }
 
 export default function BorderGlow({
   children,
+  as: Component = "article",
   className = "",
   edgeSensitivity = 30,
   glowColor = "210 90 74",
@@ -95,15 +120,21 @@ export default function BorderGlow({
     if (!animated || !cardRef.current) return undefined;
     const card = cardRef.current;
     card.classList.add("sweep-active");
-    animateValue({ duration: 500, onUpdate: (value) => card.style.setProperty("--edge-proximity", value) });
-    animateValue({ ease: easeInCubic, duration: 1500, end: 50, onUpdate: (value) => card.style.setProperty("--cursor-angle", `${(355 * (value / 100)) + 110}deg`) });
-    animateValue({ ease: easeOutCubic, delay: 1500, duration: 2250, start: 50, end: 100, onUpdate: (value) => card.style.setProperty("--cursor-angle", `${(355 * (value / 100)) + 110}deg`) });
-    animateValue({ ease: easeInCubic, delay: 2500, duration: 1500, start: 100, end: 0, onUpdate: (value) => card.style.setProperty("--edge-proximity", value), onEnd: () => card.classList.remove("sweep-active") });
-    return undefined;
+    const cancelAnimations = [
+      animateValue({ duration: 500, onUpdate: (value) => card.style.setProperty("--edge-proximity", value) }),
+      animateValue({ ease: easeInCubic, duration: 1500, end: 50, onUpdate: (value) => card.style.setProperty("--cursor-angle", `${(355 * (value / 100)) + 110}deg`) }),
+      animateValue({ ease: easeOutCubic, delay: 1500, duration: 2250, start: 50, end: 100, onUpdate: (value) => card.style.setProperty("--cursor-angle", `${(355 * (value / 100)) + 110}deg`) }),
+      animateValue({ ease: easeInCubic, delay: 2500, duration: 1500, start: 100, end: 0, onUpdate: (value) => card.style.setProperty("--edge-proximity", value), onEnd: () => card.classList.remove("sweep-active") }),
+    ];
+
+    return () => {
+      cancelAnimations.forEach((cancel) => cancel());
+      card.classList.remove("sweep-active");
+    };
   }, [animated]);
 
   return (
-    <article
+    <Component
       ref={cardRef}
       onPointerMove={handlePointerMove}
       className={`border-glow-card ${className}`}
@@ -120,6 +151,6 @@ export default function BorderGlow({
     >
       <span className="edge-light" aria-hidden="true" />
       <div className="border-glow-inner">{children}</div>
-    </article>
+    </Component>
   );
 }

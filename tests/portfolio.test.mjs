@@ -110,6 +110,23 @@ test("home gallery data contains two live cases and two local placeholders", asy
   assert.equal(homeMarqueeRows.every((row) => row.trim().length > 0), true);
 });
 
+test("only the enterprise gallery cover anchors to the top center", async () => {
+  const { projectGalleryItems } = await import("../src/data/projects.js");
+  const { default: AccordionGallery } = await vite.ssrLoadModule(
+    "/src/components/AccordionGallery.jsx",
+  );
+  const enterprise = projectGalleryItems.find((item) => item.slug === "enterprise");
+  const otherItems = projectGalleryItems.filter((item) => item.slug !== "enterprise");
+
+  assert.equal(enterprise.objectPosition, "center top");
+  assert.equal(otherItems.every((item) => item.objectPosition === undefined), true);
+
+  const html = renderToStaticMarkup(
+    React.createElement(AccordionGallery, { items: projectGalleryItems }),
+  );
+  assert.equal((html.match(/object-position:center top/g) ?? []).length, 1);
+});
+
 test("decision lab favors user value when it clearly leads", async () => {
   const { calculateDecision } = await import("../src/lib/decision.js");
   const result = calculateDecision({ user: 90, business: 48, effort: 35 });
@@ -134,6 +151,26 @@ test("decision lab identifies a balanced direction", async () => {
   assert.match(result.title, /平衡/);
 });
 
+test("homepage CTA scrolls the requested section into view", async () => {
+  const { scrollToSection } = await vite.ssrLoadModule("/src/App.jsx");
+  let receivedOptions;
+  const section = {
+    scrollIntoView(options) {
+      receivedOptions = options;
+    },
+  };
+  const documentRoot = {
+    getElementById(id) {
+      return id === "work" ? section : null;
+    },
+  };
+
+  assert.equal(typeof scrollToSection, "function");
+  assert.equal(scrollToSection("work", documentRoot), true);
+  assert.deepEqual(receivedOptions, { behavior: "smooth", block: "start" });
+  assert.equal(scrollToSection("missing", documentRoot), false);
+});
+
 test("home route renders the complete portfolio story", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
@@ -147,6 +184,9 @@ test("home route renders the complete portfolio story", async () => {
   assert.match(html, /保持联系/);
   assert.match(html, /href="#work"/);
   assert.match(html, /href="#lab"/);
+  assert.equal((html.match(/data-specular-button="true"/g) ?? []).length, 1);
+  assert.match(html, /<button[^>]*data-specular-button="true"[^>]*>[\s\S]*查看作品[\s\S]*<\/button>/);
+  assert.doesNotMatch(html, /class="button button-light" href="#work"/);
   assert.match(html, /data-faulty-terminal="true"/);
   assert.doesNotMatch(html, /data-hero-unicorn|unicornstudio/i);
   assert.doesNotMatch(html, /FULLSCREEN VIDEO PLACEHOLDER|<video/);
@@ -412,4 +452,92 @@ test("case chapter navigation uses scroll on mobile and scroll hover or focus on
     false,
   );
   assert.equal(getCaseFrameId("consumer", 0), "case-frame-consumer-1");
+});
+
+test("PillNav renders four animated links and an accessible closed mobile menu", async () => {
+  const { default: PillNav } = await vite.ssrLoadModule("/src/components/PillNav.jsx");
+  const items = [
+    { label: "作品", href: "#work" },
+    { label: "关于", href: "#about" },
+    { label: "互动实验", href: "#lab" },
+    { label: "联系", href: "#contact" },
+  ];
+  const html = renderToStaticMarkup(React.createElement(PillNav, { items }));
+
+  assert.equal((html.match(/class="pill"/g) ?? []).length, 4);
+  assert.equal((html.match(/class="pill-label-hover" aria-hidden="true"/g) ?? []).length, 4);
+  assert.match(html, /class="pill-nav-toggle"/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /aria-controls="pill-nav-mobile-menu"/);
+  assert.match(html, /id="pill-nav-mobile-menu"/);
+});
+
+test("PillNav keeps a navigation landmark without misreporting an anchor as the current page", async () => {
+  const { default: PillNav } = await vite.ssrLoadModule("/src/components/PillNav.jsx");
+  const html = renderToStaticMarkup(
+    React.createElement(PillNav, {
+      activeHref: "/#work",
+      items: [
+        { label: "作品", href: "/#work" },
+        { label: "关于", href: "/#about" },
+      ],
+    }),
+  );
+
+  assert.match(html, /^<nav\b[^>]*aria-label="主导航"/);
+  assert.match(html, /class="pill is-active"/);
+  assert.doesNotMatch(html, /aria-current=/);
+});
+
+test("BorderGlow supports a neutral navigation container without changing card semantics", async () => {
+  const { default: BorderGlow } = await vite.ssrLoadModule("/src/components/BorderGlow.jsx");
+  const cardHtml = renderToStaticMarkup(
+    React.createElement(BorderGlow, null, React.createElement("span", null, "Card")),
+  );
+  const navigationHtml = renderToStaticMarkup(
+    React.createElement(BorderGlow, { as: "div" }, React.createElement("span", null, "Navigation")),
+  );
+
+  assert.match(cardHtml, /^<article\b/);
+  assert.match(navigationHtml, /^<div\b/);
+});
+
+test("BorderGlow intro animation exposes cleanup for pending timer work", async () => {
+  const { animateValue } = await vite.ssrLoadModule("/src/components/BorderGlow.jsx");
+  const calls = [];
+  const scheduler = {
+    now: () => 0,
+    setTimeout: () => 41,
+    clearTimeout: (id) => calls.push(["timeout", id]),
+    requestAnimationFrame: () => 42,
+    cancelAnimationFrame: (id) => calls.push(["frame", id]),
+  };
+
+  const cancel = animateValue({ delay: 1000, onUpdate() {} }, scheduler);
+  assert.equal(typeof cancel, "function");
+  cancel();
+  assert.deepEqual(calls, [["timeout", 41]]);
+});
+
+test("every public route uses one glowing PillNav while preserving its anchor destinations", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.equal((homeHtml.match(/class="border-glow-card site-nav-glow"/g) ?? []).length, 1);
+  assert.equal((homeHtml.match(/class="wordmark"/g) ?? []).length, 1);
+  assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 4);
+  for (const href of ["#work", "#about", "#lab", "#contact"]) {
+    assert.match(homeHtml, new RegExp(`href="${href}"`));
+  }
+
+  for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
+    assert.equal((html.match(/class="border-glow-card site-nav-glow"/g) ?? []).length, 1, route);
+    assert.equal((html.match(/class="pill(?: is-active)?"/g) ?? []).length, 4, route);
+    assert.match(html, /href="\/#work"/);
+    assert.match(html, /href="\/#about"/);
+    assert.match(html, /href="\/#lab"/);
+    assert.match(html, /href="\/#contact"/);
+    assert.match(html, /class="pill is-active"/);
+  }
 });

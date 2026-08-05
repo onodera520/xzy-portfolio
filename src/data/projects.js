@@ -147,6 +147,7 @@ export const projectGalleryItems = [
     label: "B 端产品",
     status: "跨境电商异常中枢平台",
     image: "/portfolio/enterprise/boards/frame-01.webp",
+    objectPosition: "center top",
     alt: "跨境电商异常中枢平台封面",
     link: "/work/enterprise",
   },
