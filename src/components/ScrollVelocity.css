@@ -1,0 +1,64 @@
+.scroll-velocity {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 100%;
+  overflow: hidden;
+  border-block: 1px solid rgba(255, 255, 255, 0.18);
+  background: #050505;
+}
+
+.scroll-velocity-row {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.scroll-velocity-row + .scroll-velocity-row {
+  border-top: 1px solid rgba(5, 5, 5, 0.15);
+  background: linear-gradient(90deg, #f0cfbf, #d8d2f4 48%, #cfedc3);
+  color: #050505;
+}
+
+.scroll-velocity-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.scroll-velocity-copy {
+  flex-shrink: 0;
+  padding: 0.14em 0.3em 0.18em 0;
+  color: #f7f5ef;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  font-size: clamp(2.4rem, 4.7vw, 5.6rem);
+  font-weight: 780;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.scroll-velocity-row:nth-child(2) .scroll-velocity-copy {
+  color: #050505;
+}
+
+@media (max-width: 767px) {
+  .scroll-velocity-copy {
+    font-size: clamp(1.75rem, 9vw, 3rem);
+    letter-spacing: -0.035em;
+  }
+
+  .scroll-velocity-copy:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-velocity-track {
+    transform: none !important;
+  }
+
+  .scroll-velocity-copy:not(:first-child) {
+    display: none;
+  }
+}
