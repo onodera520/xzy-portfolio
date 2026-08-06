@@ -27,6 +27,22 @@ test("a mismatched viewport uses contain sizing without cropping", () => {
   );
 });
 
+test("a larger matching viewport scales the complete demo up to fill it", () => {
+  assert.deepEqual(
+    calculateDemoScale({
+      viewportWidth: 2560,
+      viewportHeight: 1480,
+      canvasWidth: 1707,
+      canvasHeight: 987,
+    }),
+    {
+      scale: 1480 / 987,
+      renderedWidth: 2559.635,
+      renderedHeight: 1480,
+    },
+  );
+});
+
 test("invalid measurements fall back without producing NaN styles", () => {
   assert.deepEqual(
     calculateDemoScale({

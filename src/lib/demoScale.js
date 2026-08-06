@@ -20,7 +20,6 @@ export function calculateDemoScale({
   const scale = Math.min(
     viewportWidth / canvasWidth,
     viewportHeight / canvasHeight,
-    1,
   );
 
   const roundMeasurement = (value) => Math.round(value * 1000) / 1000;

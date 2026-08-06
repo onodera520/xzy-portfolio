@@ -1216,10 +1216,10 @@ h3 {
 }
 
 .portfolio-board-demo {
-  padding: clamp(48px, 6vw, 92px);
-  border: 1px solid rgb(126 164 255 / 20%);
-  border-radius: 22px;
-  background: #0b2257;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .board-case-end {
@@ -1283,8 +1283,8 @@ h3 {
   }
 
   .portfolio-board-demo {
-    padding: 24px 12px;
-    border-radius: 14px;
+    padding: 0;
+    border-radius: 0;
   }
 
   .board-case-end {
@@ -1683,39 +1683,49 @@ h3 {
   color: #f7f9ff;
 }
 
-.demo-heading,
-.demo-footer {
+.demo-heading {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 30px;
+  gap: 20px;
 }
 
 .demo-heading {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .demo-heading p {
-  margin-bottom: 14px;
+  margin-bottom: 4px;
   color: #79a4ff;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.18em;
 }
 
 .demo-heading h2 {
-  font-size: clamp(46px, 5vw, 82px);
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.1;
 }
 
-.demo-heading > span,
-.demo-footer {
+.demo-open-link {
+  flex: none;
   color: rgba(247, 249, 255, 0.55);
   font-size: 12px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
+  transition: color 180ms ease;
+}
+
+a.demo-open-link:hover,
+a.demo-open-link:focus-visible {
+  color: #fff;
+}
+
+.demo-open-link.is-disabled {
+  opacity: 0.65;
 }
 
 .demo-viewport {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 2560 / 1480;
   overflow: hidden;
   border: 1px solid rgba(117, 157, 255, 0.26);
   border-radius: 12px;
@@ -2002,19 +2012,27 @@ h3 {
     padding-block: 74px;
   }
 
-  .demo-heading,
-  .demo-footer,
   .figma-case-end {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .demo-heading > span {
-    display: none;
+  .demo-heading {
+    align-items: flex-end;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .demo-heading h2 {
+    font-size: 22px;
+  }
+
+  .demo-open-link {
+    font-size: 10px;
   }
 
   .demo-viewport {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 2560 / 1480;
   }
 
   .demo-placeholder-copy {

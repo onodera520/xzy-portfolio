@@ -335,6 +335,12 @@ test("DemoEmbed reserves space before a URL and exposes both embed and fallback 
   assert.match(linkedHtml, /<iframe/);
   assert.match(linkedHtml, /https:\/\/demo\.example\.com/);
   assert.match(linkedHtml, /在新窗口打开/);
+  const headingIndex = linkedHtml.indexOf('class="demo-heading"');
+  const linkIndex = linkedHtml.indexOf('href="https://demo.example.com"');
+  const viewportIndex = linkedHtml.indexOf('class="demo-viewport is-live"');
+  assert.ok(headingIndex < linkIndex && linkIndex < viewportIndex);
+  assert.doesNotMatch(linkedHtml, /class="demo-footer"/);
+  assert.doesNotMatch(emptyHtml, /class="demo-footer"/);
 });
 
 test("live enterprise demo renders inside a scalable fixed canvas", async () => {
@@ -347,8 +353,9 @@ test("live enterprise demo renders inside a scalable fixed canvas", async () => 
   );
 
   assert.match(html, /class="demo-canvas"/);
-  assert.match(html, /width:1920px/);
-  assert.match(html, /height:1200px/);
+  assert.match(html, /width:1707px/);
+  assert.match(html, /height:987px/);
+  assert.doesNotMatch(html, /DESKTOP EXPERIENCE/);
 });
 
 test("complete artboards keep responsive breathing room between images", () => {
@@ -359,6 +366,22 @@ test("complete artboards keep responsive breathing room between images", () => {
   assert.match(css, /\.case-reader-layout\s*\{[^}]*grid-template-columns:\s*clamp\(180px,\s*13vw,\s*220px\)\s+minmax\(0,\s*1fr\)/s);
   assert.match(css, /\.portfolio-board-list\s*\{[^}]*width:\s*100%[^}]*gap:\s*var\(--board-gap\)/s);
   assert.match(css, /@media\s*\(max-width:\s*767px\)[\s\S]*\.case-reader-layout\s*\{[^}]*grid-template-columns:\s*40px\s+minmax\(0,\s*1fr\)/);
+});
+
+test("the interactive demo wrapper gives the dashboard the full portfolio width", () => {
+  const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+  const wrapperRules = [...css.matchAll(/\.portfolio-board-demo\s*\{([^}]*)\}/g)]
+    .map((match) => match[1]);
+
+  assert.equal(wrapperRules.length, 2);
+  for (const rule of wrapperRules) {
+    assert.match(rule, /padding:\s*0/);
+    assert.match(rule, /border-radius:\s*0/);
+  }
+  assert.match(wrapperRules[0], /border:\s*0/);
+  assert.match(wrapperRules[0], /background:\s*transparent/);
+  assert.match(css, /\.demo-heading\s*\{[^}]*margin-bottom:\s*16px/s);
+  assert.match(css, /\.demo-heading h2\s*\{[^}]*font-size:\s*clamp\(24px,\s*2\.4vw,\s*32px\)/s);
 });
 
 test("every complete artboard has a 16px rounded corner", () => {

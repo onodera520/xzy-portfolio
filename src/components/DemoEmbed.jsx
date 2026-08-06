@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { calculateDemoScale } from "../lib/demoScale.js";
 
-const DEMO_CANVAS_WIDTH = 1920;
-const DEMO_CANVAS_HEIGHT = 1200;
+const DEMO_CANVAS_WIDTH = 1707;
+const DEMO_CANVAS_HEIGHT = 987;
 
 function Poster({ poster }) {
   if (!poster) return <div className="demo-grid" aria-hidden="true" />;
@@ -86,7 +86,13 @@ export function DemoEmbed({ url, title, poster }) {
           <p>INTERACTIVE PROTOTYPE</p>
           <h2 id="demo-title">可交互 Demo</h2>
         </div>
-        <span>16:10 / DESKTOP EXPERIENCE</span>
+        {url ? (
+          <a className="demo-open-link" href={url} target="_blank" rel="noreferrer">
+            在新窗口打开 ↗
+          </a>
+        ) : (
+          <span className="demo-open-link is-disabled">Demo 地址稍后补充</span>
+        )}
       </div>
 
       {url ? (
@@ -104,13 +110,6 @@ export function DemoEmbed({ url, title, poster }) {
         </div>
       )}
 
-      <div className="demo-footer">
-        {url ? (
-          <a href={url} target="_blank" rel="noreferrer">在新窗口打开 ↗</a>
-        ) : (
-          <span>Demo 地址稍后补充</span>
-        )}
-      </div>
     </section>
   );
 }
