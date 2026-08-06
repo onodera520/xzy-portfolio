@@ -90,7 +90,7 @@ export const portfolioCases = {
     cover: enterpriseFrames[0].board,
     frames: enterpriseFrames,
     demo: {
-      url: "",
+      url: "/portfolio/enterprise/demo/index.html",
       title: "跨境电商异常中枢可交互 Demo",
       poster: enterpriseFrames[0].board,
     },

@@ -155,8 +155,8 @@ export const projectGalleryItems = [
     slug: "campaign",
     label: "H5 运营活动",
     status: "COMING SOON",
-    image: "/portfolio/placeholders/h5.svg",
-    alt: "H5 运营活动项目占位视觉",
+    image: "/portfolio/campaign/cover.webp",
+    alt: "奇遇闹新春 H5 运营活动封面",
   },
   {
     slug: "ai-product",

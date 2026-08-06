@@ -88,6 +88,7 @@ export default function BorderGlow({
   glowIntensity = 0.9,
   coneSpread = 25,
   animated = false,
+  continuous = false,
   colors = ["#6ea8ff", "#b8ff68", "#75e6da"],
   fillOpacity = 0.35,
 }) {
@@ -137,7 +138,8 @@ export default function BorderGlow({
     <Component
       ref={cardRef}
       onPointerMove={handlePointerMove}
-      className={`border-glow-card ${className}`}
+      className={`border-glow-card${continuous ? " is-continuous" : ""}${className ? ` ${className}` : ""}`}
+      data-continuous-glow={continuous || undefined}
       style={{
         "--card-bg": backgroundColor,
         "--edge-sensitivity": edgeSensitivity,
@@ -149,6 +151,7 @@ export default function BorderGlow({
         ...buildGradientVars(colors),
       }}
     >
+      {continuous ? <span className="continuous-glow" aria-hidden="true" /> : null}
       <span className="edge-light" aria-hidden="true" />
       <div className="border-glow-inner">{children}</div>
     </Component>

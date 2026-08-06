@@ -46,6 +46,7 @@ function Navigation({ homeLinks = false, inverted = false }) {
         coneSpread={24}
         fillOpacity={0.2}
         animated
+        continuous
         colors={["#8db9ef", "#c084fc", "#75e6da"]}
       >
         <div className="nav-inner shell">
@@ -53,6 +54,7 @@ function Navigation({ homeLinks = false, inverted = false }) {
           <PillNav
             items={items}
             activeHref={homeLinks ? undefined : `${anchor}work`}
+            frameless
           />
         </div>
       </BorderGlow>

@@ -11,6 +11,7 @@ export default function PillNav({
   ease = "power3.out",
   className = "",
   initialLoadAnimation = true,
+  frameless = false,
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const circleRefs = useRef([]);
@@ -127,7 +128,10 @@ export default function PillNav({
   };
 
   return (
-    <nav className={`pill-nav ${className}`.trim()} aria-label="主导航">
+    <nav
+      className={`pill-nav${frameless ? " pill-nav--frameless" : ""}${className ? ` ${className}` : ""}`}
+      aria-label="主导航"
+    >
       <div className="pill-nav-desktop" ref={desktopRef}>
         <ul className="pill-list">
           {items.map((item, index) => (

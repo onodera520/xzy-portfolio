@@ -92,6 +92,54 @@
   content: "";
 }
 
+.border-glow-card > .continuous-glow {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgb(141 185 239 / 18%) 0%,
+    #8db9ef 24%,
+    #c084fc 52%,
+    #75e6da 76%,
+    rgb(117 230 218 / 18%) 100%
+  );
+  background-position: 100% 50%;
+  background-size: 240% 100%;
+  filter: drop-shadow(0 0 7px rgb(141 185 239 / 42%));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.56;
+  pointer-events: none;
+  will-change: background-position, filter, opacity;
+  animation:
+    continuous-glow-flow 5.5s linear infinite,
+    continuous-glow-breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes continuous-glow-flow {
+  from { background-position: 100% 50%; }
+  to { background-position: -140% 50%; }
+}
+
+@keyframes continuous-glow-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgb(141 185 239 / 34%));
+    opacity: 0.46;
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 11px rgb(192 132 252 / 52%))
+      drop-shadow(0 0 18px rgb(117 230 218 / 24%));
+    opacity: 0.92;
+  }
+}
+
 .border-glow-inner {
   position: relative;
   z-index: 1;
@@ -108,6 +156,10 @@
   .border-glow-card > .edge-light {
     display: none;
   }
+
+  .border-glow-card > .continuous-glow {
+    filter: drop-shadow(0 0 5px rgb(141 185 239 / 30%));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -115,5 +167,12 @@
   .border-glow-card::after,
   .border-glow-card > .edge-light {
     transition: none;
+  }
+
+  .border-glow-card > .continuous-glow {
+    background-position: 50% 50%;
+    filter: drop-shadow(0 0 7px rgb(141 185 239 / 38%));
+    opacity: 0.72;
+    animation: none;
   }
 }

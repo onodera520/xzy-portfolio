@@ -30,6 +30,16 @@
   display: flex;
 }
 
+.pill-nav--frameless .pill-nav-desktop {
+  height: 38px;
+  background: transparent;
+}
+
+.pill-nav--frameless .pill-list {
+  padding: 0;
+  gap: 6px;
+}
+
 .pill {
   position: relative;
   height: 100%;

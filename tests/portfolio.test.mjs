@@ -35,7 +35,7 @@ test("project collection resolves each public case route", async () => {
   assert.equal(getProject("enterprise").frames.length, 14);
   assert.equal(getProject("enterprise").frames.filter((frame) => frame.board).length, 14);
   assert.equal(new Set(getProject("enterprise").frames.map((frame) => frame.nodeId)).size, 14);
-  assert.equal(getProject("enterprise").demo.url, "");
+  assert.equal(getProject("enterprise").demo.url, "/portfolio/enterprise/demo/index.html");
   assert.equal(getProject("campaign").title, "H5 运营活动项目");
   assert.equal(getProject("missing"), undefined);
 
@@ -98,6 +98,11 @@ test("home gallery data contains two live cases and two local placeholders", asy
     ["/work/consumer", "/work/enterprise", null, null],
   );
   assert.equal(projectGalleryItems.filter((item) => item.status === "COMING SOON").length, 2);
+  const campaign = projectGalleryItems.find((item) => item.slug === "campaign");
+  assert.equal(campaign.image, "/portfolio/campaign/cover.webp");
+  assert.equal(campaign.status, "COMING SOON");
+  assert.equal(campaign.link, undefined);
+  assert.equal(campaign.alt, "奇遇闹新春 H5 运营活动封面");
   for (const item of projectGalleryItems) {
     assert.match(item.image, /^\/portfolio\//);
     assert.doesNotMatch(item.image, /^https?:\/\//);
@@ -195,7 +200,7 @@ test("home route renders the complete portfolio story", async () => {
   assert.equal((html.match(/ag-panel--active/g) ?? []).length, 0);
   assert.match(html, /\/portfolio\/consumer\/boards\/frame-01\.webp/);
   assert.match(html, /\/portfolio\/enterprise\/boards\/frame-01\.webp/);
-  assert.match(html, /\/portfolio\/placeholders\/h5\.svg/);
+  assert.match(html, /\/portfolio\/campaign\/cover\.webp/);
   assert.match(html, /\/portfolio\/placeholders\/ai-product\.svg/);
   assert.doesNotMatch(html, /class="project-card/);
 });
@@ -277,7 +282,8 @@ test("Figma-backed case routes render only complete artboards in source order", 
   assert.match(consumerHtml, /id="case-frame-consumer-1"/);
   assert.match(enterpriseHtml, /跨境电商异常中枢平台/);
   assert.match(enterpriseHtml, /可交互 Demo/);
-  assert.match(enterpriseHtml, /Demo 地址稍后补充/);
+  assert.match(enterpriseHtml, /<iframe[^>]+src="\/portfolio\/enterprise\/demo\/index\.html"/);
+  assert.doesNotMatch(enterpriseHtml, /Demo 地址稍后补充/);
   assert.equal((enterpriseHtml.match(/class="portfolio-board"/g) ?? []).length, 14);
   assert.equal((enterpriseHtml.match(/data-figma-node=/g) ?? []).length, 14);
   assert.equal((enterpriseHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 14);
@@ -292,6 +298,24 @@ test("Figma-backed case routes render only complete artboards in source order", 
       enterpriseHtml.indexOf('class="case-other-link'),
   );
   assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}`, /2830008192@qq\.com|2026我能找到工作吗|我是文案|figma\.com\/api\/mcp\/asset/);
+});
+
+test("enterprise demo ships as a self-contained local static app", () => {
+  const demoRoot = path.join(process.cwd(), "public", "portfolio", "enterprise", "demo");
+  const indexPath = path.join(demoRoot, "index.html");
+  const scriptPath = path.join(demoRoot, "assets", "index-B_Lv1ymR.js");
+  const stylePath = path.join(demoRoot, "assets", "index-CfV49CKJ.css");
+
+  for (const filePath of [indexPath, scriptPath, stylePath]) {
+    assert.equal(fs.existsSync(filePath), true, `${filePath} should exist`);
+  }
+
+  const indexHtml = fs.readFileSync(indexPath, "utf8");
+  const script = fs.readFileSync(scriptPath, "utf8");
+  const style = fs.readFileSync(stylePath, "utf8");
+  assert.match(indexHtml, /\/portfolio\/enterprise\/demo\/assets\/index-B_Lv1ymR\.js/);
+  assert.match(script, /basename:"\/portfolio\/enterprise\/demo\/index\.html"/);
+  assert.doesNotMatch(`${indexHtml}${script}${style}`, /(?:src=|href=|url\()\s*["']?\/assets\//);
 });
 
 test("DemoEmbed reserves space before a URL and exposes both embed and fallback after one is provided", async () => {
@@ -311,6 +335,20 @@ test("DemoEmbed reserves space before a URL and exposes both embed and fallback 
   assert.match(linkedHtml, /<iframe/);
   assert.match(linkedHtml, /https:\/\/demo\.example\.com/);
   assert.match(linkedHtml, /在新窗口打开/);
+});
+
+test("live enterprise demo renders inside a scalable fixed canvas", async () => {
+  const { DemoEmbed } = await vite.ssrLoadModule("/src/components/DemoEmbed.jsx");
+  const html = renderToStaticMarkup(
+    React.createElement(DemoEmbed, {
+      title: "跨境电商异常中枢平台",
+      url: "/portfolio/enterprise/demo/index.html",
+    }),
+  );
+
+  assert.match(html, /class="demo-canvas"/);
+  assert.match(html, /width:1920px/);
+  assert.match(html, /height:1200px/);
 });
 
 test("complete artboards keep responsive breathing room between images", () => {
@@ -502,6 +540,36 @@ test("BorderGlow supports a neutral navigation container without changing card s
   assert.match(navigationHtml, /^<div\b/);
 });
 
+test("BorderGlow exposes a persistent breathing mode for the navigation frame", async () => {
+  const { default: BorderGlow } = await vite.ssrLoadModule("/src/components/BorderGlow.jsx");
+  const html = renderToStaticMarkup(
+    React.createElement(
+      BorderGlow,
+      { as: "div", continuous: true },
+      React.createElement("span", null, "Navigation"),
+    ),
+  );
+
+  assert.match(html, /class="border-glow-card is-continuous"/);
+  assert.match(html, /data-continuous-glow="true"/);
+});
+
+test("PillNav can remove the shared desktop shell without removing animated pills", async () => {
+  const { default: PillNav } = await vite.ssrLoadModule("/src/components/PillNav.jsx");
+  const html = renderToStaticMarkup(
+    React.createElement(PillNav, {
+      frameless: true,
+      items: [
+        { label: "Work", href: "#work" },
+        { label: "About", href: "#about" },
+      ],
+    }),
+  );
+
+  assert.match(html, /class="pill-nav pill-nav--frameless"/);
+  assert.equal((html.match(/class="pill-hover-circle"/g) ?? []).length, 2);
+});
+
 test("BorderGlow intro animation exposes cleanup for pending timer work", async () => {
   const { animateValue } = await vite.ssrLoadModule("/src/components/BorderGlow.jsx");
   const calls = [];
@@ -523,7 +591,7 @@ test("every public route uses one glowing PillNav while preserving its anchor de
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.equal((homeHtml.match(/class="border-glow-card site-nav-glow"/g) ?? []).length, 1);
+  assert.equal((homeHtml.match(/class="border-glow-card is-continuous site-nav-glow"/g) ?? []).length, 1);
   assert.equal((homeHtml.match(/class="wordmark"/g) ?? []).length, 1);
   assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 4);
   for (const href of ["#work", "#about", "#lab", "#contact"]) {
@@ -532,7 +600,7 @@ test("every public route uses one glowing PillNav while preserving its anchor de
 
   for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign"]) {
     const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
-    assert.equal((html.match(/class="border-glow-card site-nav-glow"/g) ?? []).length, 1, route);
+    assert.equal((html.match(/class="border-glow-card is-continuous site-nav-glow"/g) ?? []).length, 1, route);
     assert.equal((html.match(/class="pill(?: is-active)?"/g) ?? []).length, 4, route);
     assert.match(html, /href="\/#work"/);
     assert.match(html, /href="\/#about"/);
