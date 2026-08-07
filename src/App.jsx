@@ -10,6 +10,7 @@ import SoftAurora from "./components/SoftAurora.jsx";
 import SpecularButton from "./components/SpecularButton.jsx";
 import BorderGlow from "./components/BorderGlow.jsx";
 import PillNav from "./components/PillNav.jsx";
+import ProfileCard from "./components/ProfileCard.jsx";
 import { getProject, projectGalleryItems } from "./data/projects.js";
 
 export function scrollToSection(
@@ -147,9 +148,17 @@ function HomePage() {
 
         <section className="about-section section" id="about">
           <div className="shell">
-            <div className="section-index">ABOUT / XZY</div>
+            <div className="section-index">ABOUT / ME</div>
             <div className="about-layout">
-              <BlurText as="h2" text="我是一名正在寻找产品设计与用户体验岗位的 UI/UX 设计研究生。" delay={30} />
+              <FadeContent className="home-reveal about-card-reveal" duration={1.05} delay={0.04}>
+                <div className="about-card-column">
+                  <ProfileCard
+                    avatarUrl="/about/ziyi-xue-cutout.png"
+                    name="Ziyi Xue"
+                    title="求职方向：UI/UX/AI体验设计"
+                  />
+                </div>
+              </FadeContent>
               <FadeContent className="home-reveal" duration={1.05} delay={0.12}>
                 <div className="about-copy">
                   <p>我从研究和业务语境出发，把复杂流程整理成清晰、可理解、可执行的体验。</p>

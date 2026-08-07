@@ -99,10 +99,10 @@ test("home gallery data contains two live cases and two local placeholders", asy
   );
   assert.equal(projectGalleryItems.filter((item) => item.status === "COMING SOON").length, 2);
   const campaign = projectGalleryItems.find((item) => item.slug === "campaign");
-  assert.equal(campaign.image, "/portfolio/campaign/cover.webp");
+  assert.equal(campaign.image, "/portfolio/campaign/cover-frame-4.webp");
   assert.equal(campaign.status, "COMING SOON");
   assert.equal(campaign.link, undefined);
-  assert.equal(campaign.alt, "奇遇闹新春 H5 运营活动封面");
+  assert.equal(campaign.alt, "骑福兽闹新春 H5 运营活动封面");
   for (const item of projectGalleryItems) {
     assert.match(item.image, /^\/portfolio\//);
     assert.doesNotMatch(item.image, /^https?:\/\//);
@@ -182,7 +182,16 @@ test("home route renders the complete portfolio story", async () => {
 
   assert.match(html, /把复杂问题/);
   assert.match(html, /设计成清晰体验/);
-  assert.match(html, /我是一名正在寻找产品设计与用户体验岗位/);
+  assert.match(html, /ABOUT \/ ME/);
+  assert.match(html, /Ziyi Xue/);
+  assert.match(html, /求职方向：UI\/UX\/AI体验设计/);
+  assert.match(html, /\/about\/ziyi-xue-cutout\.png/);
+  assert.match(html, /我从研究和业务语境出发/);
+  assert.match(html, /产品设计、UX 设计/);
+  assert.match(html, /研究、定义、原型、验证/);
+  assert.match(html, /开放求职机会/);
+  assert.match(html, /RESEARCH[\s\S]*DESIGN[\s\S]*DELIVERY/);
+  assert.doesNotMatch(html, /我是一名正在寻找产品设计与用户体验岗位/);
   assert.match(html, /精选作品/);
   assert.match(html, /设计决策实验室/);
   assert.match(html, /AI 与设计/);
@@ -200,7 +209,8 @@ test("home route renders the complete portfolio story", async () => {
   assert.equal((html.match(/ag-panel--active/g) ?? []).length, 0);
   assert.match(html, /\/portfolio\/consumer\/boards\/frame-01\.webp/);
   assert.match(html, /\/portfolio\/enterprise\/boards\/frame-01\.webp/);
-  assert.match(html, /\/portfolio\/campaign\/cover\.webp/);
+  assert.match(html, /\/portfolio\/campaign\/cover-frame-4\.webp/);
+  assert.doesNotMatch(html, /\/portfolio\/campaign\/cover\.webp/);
   assert.match(html, /\/portfolio\/placeholders\/ai-product\.svg/);
   assert.doesNotMatch(html, /class="project-card/);
 });
@@ -225,9 +235,9 @@ test("home headings use a semantic one-time blur reveal", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.equal((html.match(/data-blur-text="true"/g) ?? []).length, 6);
+  assert.equal((html.match(/data-blur-text="true"/g) ?? []).length, 5);
   assert.match(html, /<h1[^>]*data-blur-text="true"/);
-  assert.equal((html.match(/<h2[^>]*data-blur-text="true"/g) ?? []).length, 5);
+  assert.equal((html.match(/<h2[^>]*data-blur-text="true"/g) ?? []).length, 4);
   assert.match(html, /class="fade-content home-reveal"/);
 });
 
@@ -631,4 +641,44 @@ test("every public route uses one glowing PillNav while preserving its anchor de
     assert.match(html, /href="\/#contact"/);
     assert.match(html, /class="pill is-active"/);
   }
+});
+
+test("the ProfileCard portrait is a local PNG with transparency", () => {
+  const portraitPath = path.join(process.cwd(), "public", "about", "ziyi-xue-cutout.png");
+  assert.equal(fs.existsSync(portraitPath), true);
+
+  const bytes = fs.readFileSync(portraitPath);
+  assert.equal(bytes.subarray(1, 4).toString("ascii"), "PNG");
+  assert.equal(bytes.readUInt32BE(16), 1024);
+  assert.equal(bytes.readUInt32BE(20), 1536);
+  assert.ok([4, 6].includes(bytes[25]), "portrait PNG must include an alpha channel");
+});
+
+test("ProfileCard renders only the portrait identity and role", async () => {
+  const { default: ProfileCard } = await vite.ssrLoadModule("/src/components/ProfileCard.jsx");
+  const html = renderToStaticMarkup(
+    React.createElement(ProfileCard, {
+      avatarUrl: "/about/ziyi-xue-cutout.png",
+      name: "Ziyi Xue",
+      title: "求职方向：UI/UX/AI体验设计",
+    }),
+  );
+
+  assert.match(html, /class="pc-card-wrapper"/);
+  assert.match(html, /src="\/about\/ziyi-xue-cutout\.png"/);
+  assert.match(html, /Ziyi Xue/);
+  assert.match(html, /求职方向：UI\/UX\/AI体验设计/);
+  assert.doesNotMatch(html, /pc-user-info|pc-mini-avatar|pc-contact-btn|@javicodes|Online/);
+});
+
+test("ProfileCard limits tilt to fine hover pointers and cleans up cancelled gestures", () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "ProfileCard.jsx"),
+    "utf8",
+  );
+
+  assert.match(source, /matchMedia\("\(hover: hover\) and \(pointer: fine\)"\)/);
+  assert.match(source, /matchMedia\("\(prefers-reduced-motion: reduce\)"\)/);
+  assert.match(source, /addEventListener\("pointercancel", handlePointerLeave\)/);
+  assert.match(source, /removeEventListener\("pointercancel", handlePointerLeave\)/);
 });
