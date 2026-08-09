@@ -682,3 +682,55 @@ test("ProfileCard limits tilt to fine hover pointers and cleans up cancelled ges
   assert.match(source, /addEventListener\("pointercancel", handlePointerLeave\)/);
   assert.match(source, /removeEventListener\("pointercancel", handlePointerLeave\)/);
 });
+
+test("LiquidEther exposes the supplied React component", async () => {
+  const { default: LiquidEther } = await vite.ssrLoadModule("/src/components/LiquidEther.jsx");
+
+  assert.equal(typeof LiquidEther, "function");
+});
+
+test("only the homepage declares one desktop LiquidEther background", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.equal((homeHtml.match(/class="home-liquid-background"/g) ?? []).length, 1);
+  assert.match(homeHtml, /data-resolution="0\.5"/);
+  assert.match(homeHtml, /data-colors="#8db9ef,#c084fc,#75e6da"/);
+
+  for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign", "/missing"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
+    assert.doesNotMatch(html, /home-liquid-background/, route);
+  }
+});
+
+test("LiquidEther stays fixed behind the interactive homepage foreground", () => {
+  const pageCss = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+  const liquidSource = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "LiquidEther.jsx"),
+    "utf8",
+  );
+  const gateSource = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "HomeLiquidBackground.jsx"),
+    "utf8",
+  );
+
+  assert.match(
+    pageCss,
+    /\.home-liquid-background\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;[^}]*z-index:\s*0;[^}]*pointer-events:\s*none;/s,
+  );
+  assert.match(pageCss, /\.home-page\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;[^}]*background:\s*transparent;/s);
+  assert.match(pageCss, /\.home-page \.about-section,[^}]*background:\s*transparent;/s);
+  assert.match(pageCss, /@media\s*\(max-width:\s*767px\)\s*\{[^}]*\.home-liquid-background\s*\{[^}]*display:\s*none;/s);
+  assert.match(gateSource, /matchMedia\(DESKTOP_QUERY\)/);
+  assert.match(liquidSource, /addEventListener\('mousemove',\s*this\._onMouseMove\)/);
+});
+
+test("the desktop gate defers the Three.js background bundle on mobile", () => {
+  const gateSource = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "HomeLiquidBackground.jsx"),
+    "utf8",
+  );
+
+  assert.match(gateSource, /import\("\.\/LiquidEther\.jsx"\)/);
+  assert.doesNotMatch(gateSource, /^import LiquidEther from/m);
+});

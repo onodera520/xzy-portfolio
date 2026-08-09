@@ -11,6 +11,7 @@ import SpecularButton from "./components/SpecularButton.jsx";
 import BorderGlow from "./components/BorderGlow.jsx";
 import PillNav from "./components/PillNav.jsx";
 import ProfileCard from "./components/ProfileCard.jsx";
+import { HomeLiquidBackground } from "./components/HomeLiquidBackground.jsx";
 import { getProject, projectGalleryItems } from "./data/projects.js";
 
 export function scrollToSection(
@@ -75,6 +76,7 @@ function MediaPlaceholder({ label, className = "" }) {
 function HomePage() {
   return (
     <>
+      <HomeLiquidBackground />
       <Navigation homeLinks />
       <main className="home-page">
         <section className="hero" id="top">

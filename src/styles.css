@@ -2058,6 +2058,62 @@ a.demo-open-link:focus-visible {
   }
 }
 
+/* Desktop-only LiquidEther homepage background */
+.home-liquid-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #050505;
+  opacity: 0.74;
+  pointer-events: none;
+}
+
+.home-liquid-background .liquid-ether-container,
+.home-liquid-background canvas {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.home-page {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.home-page .hero,
+.home-page .about-section,
+.home-page .work-section,
+.home-page .lab-section,
+.home-page .ai-section,
+.home-page .contact-section {
+  background: transparent;
+}
+
+.home-page + .footer {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+@media (max-width: 767px) {
+  .home-liquid-background {
+    display: none;
+  }
+
+  .home-page,
+  .home-page .hero,
+  .home-page .about-section,
+  .home-page .work-section,
+  .home-page .lab-section,
+  .home-page .ai-section,
+  .home-page .contact-section,
+  .home-page + .footer {
+    background: var(--home-black);
+  }
+}
+
 /* Morez-inspired homepage refresh */
 
 :root {
