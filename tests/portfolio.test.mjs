@@ -725,6 +725,31 @@ test("LiquidEther stays fixed behind the interactive homepage foreground", () =>
   assert.match(liquidSource, /addEventListener\('mousemove',\s*this\._onMouseMove\)/);
 });
 
+test("desktop homepage sections cannot paint an opaque layer over LiquidEther", () => {
+  const pageCss = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+  const finalDesktopOverride = pageCss.lastIndexOf("@media (min-width: 768px)");
+  const finalOpaqueHomepageLayer = pageCss.lastIndexOf("background: var(--home-black)");
+
+  assert.ok(
+    finalDesktopOverride > finalOpaqueHomepageLayer,
+    "the desktop transparency override must win the CSS cascade",
+  );
+
+  const desktopCss = pageCss.slice(finalDesktopOverride);
+  for (const selector of [
+    ".home-page",
+    ".home-page .hero",
+    ".home-page .about-section",
+    ".home-page .work-section",
+    ".home-page .lab-section",
+    ".home-page .ai-section",
+    ".home-page .contact-section",
+  ]) {
+    assert.ok(desktopCss.includes(selector), `${selector} must reveal the desktop canvas`);
+  }
+  assert.match(desktopCss, /background:\s*transparent/);
+});
+
 test("the desktop gate defers the Three.js background bundle on mobile", () => {
   const gateSource = fs.readFileSync(
     path.join(process.cwd(), "src", "components", "HomeLiquidBackground.jsx"),

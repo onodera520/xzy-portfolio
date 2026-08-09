@@ -2895,6 +2895,21 @@ a.demo-open-link:focus-visible {
   }
 }
 
+/* Keep this after the homepage refresh rules so the desktop WebGL canvas
+   remains visible through every full-width section. */
+@media (min-width: 768px) {
+  .home-page,
+  .home-page .hero,
+  .home-page .about-section,
+  .home-page .work-section,
+  .home-page .lab-section,
+  .home-page .ai-section,
+  .home-page .contact-section,
+  .home-page + .footer {
+    background: transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit {
     animation: none;
