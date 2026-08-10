@@ -154,9 +154,10 @@ export const projectGalleryItems = [
   {
     slug: "campaign",
     label: "H5 运营活动",
-    status: "COMING SOON",
-    image: "/portfolio/campaign/cover-frame-4.webp",
-    alt: "骑福兽闹新春 H5 运营活动封面",
+    status: "骑福兽，闹新春",
+    image: "/portfolio/campaign/boards/frame-01.webp",
+    alt: "骑福兽，闹新春 H5 运营活动封面",
+    link: "/work/campaign",
   },
   {
     slug: "ai-product",

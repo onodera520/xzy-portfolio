@@ -154,6 +154,10 @@
     color: #aab8d6;
   }
 
+  .case-chapter-nav.is-campaign .case-chapter-nav__mobile {
+    color: #D98286;
+  }
+
   .case-chapter-nav__mobile span {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     opacity: 0.7;

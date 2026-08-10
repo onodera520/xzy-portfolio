@@ -4,6 +4,23 @@ import LineSidebar from "./LineSidebar.jsx";
 
 const MOBILE_QUERY = "(max-width: 767px)";
 const HIDE_DELAY = 500;
+const CHAPTER_NAV_PALETTES = {
+  consumer: {
+    accentColor: "#006cff",
+    textColor: "#31506b",
+    markerColor: "#6b91ac",
+  },
+  enterprise: {
+    accentColor: "#6ea8ff",
+    textColor: "#aab8d6",
+    markerColor: "#50658c",
+  },
+  campaign: {
+    accentColor: "#FF8F96",
+    textColor: "#D98286",
+    markerColor: "#B86568",
+  },
+};
 
 export function shouldShowChapterNav({ isMobile, isScrolling, isHovered, isFocused }) {
   return isMobile ? isScrolling : isScrolling || isHovered || isFocused;
@@ -23,6 +40,8 @@ export function CaseChapterNav({ projectSlug, frames }) {
   const titles = useMemo(() => frames.map((frame) => frame.title), [frames]);
   const isVisible = shouldShowChapterNav({ isMobile, isScrolling, isHovered, isFocused });
   const isEnterprise = projectSlug === "enterprise";
+  const isCampaign = projectSlug === "campaign";
+  const palette = CHAPTER_NAV_PALETTES[projectSlug] ?? CHAPTER_NAV_PALETTES.consumer;
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_QUERY);
@@ -80,7 +99,7 @@ export function CaseChapterNav({ projectSlug, frames }) {
 
   return (
     <aside
-      className={`case-chapter-nav${isVisible ? " is-visible" : ""}${isEnterprise ? " is-enterprise" : ""}`}
+      className={`case-chapter-nav${isVisible ? " is-visible" : ""}${isEnterprise ? " is-enterprise" : ""}${isCampaign ? " is-campaign" : ""}`}
       aria-label="作品集章节"
       onPointerEnter={() => setIsHovered(true)}
       onPointerLeave={() => setIsHovered(false)}
@@ -100,9 +119,9 @@ export function CaseChapterNav({ projectSlug, frames }) {
             className="case-chapter-nav__desktop"
             items={titles}
             activeIndex={activeIndex}
-            accentColor={isEnterprise ? "#6ea8ff" : "#006cff"}
-            textColor={isEnterprise ? "#aab8d6" : "#31506b"}
-            markerColor={isEnterprise ? "#50658c" : "#6b91ac"}
+            accentColor={palette.accentColor}
+            textColor={palette.textColor}
+            markerColor={palette.markerColor}
             proximityRadius={76}
             maxShift={14}
             markerLength={42}

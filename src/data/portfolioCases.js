@@ -10,8 +10,13 @@ const enterpriseNodes = [
   "808:12509", "808:12606", "808:11922", "808:12759",
 ];
 
+const campaignNodes = [
+  "campaign:01", "campaign:02", "campaign:03", "campaign:04", "campaign:05",
+];
+
 const consumerHeights = [1080, 1600, 1080, 1950, 1561, 2288, 1400, 2214, 3771, 2102, 2800, 2566, 1700, 1300, 1587];
 const enterpriseHeights = [1600, 1080, 1080, 1600, 1080, 1922, 1600, 1700, 2000, 1080, 2016, 2300, 1100, 1080];
+const campaignHeights = [1280, 1900, 1266, 1132, 1280];
 
 const consumerChapterTitles = [
   "项目封面", "产品概览", "现状与用户", "AI 调研流程", "需求洞察",
@@ -23,6 +28,10 @@ const enterpriseChapterTitles = [
   "项目封面与背景", "AI 调研", "机会点", "视觉规范", "栅格系统",
   "组件库", "异常看板", "任务列表", "进度验收", "高风险订单",
   "库存决策", "数据复盘", "多角色走查", "Vibe Coding 与 AI 反思",
+];
+
+const campaignChapterTitles = [
+  "项目封面", "AI 工作流设计", "主视觉运营设计", "徽章收集体验", "AIGC 经验总结",
 ];
 
 function createBoard(project, frame, height, title) {
@@ -47,6 +56,7 @@ function createFrames(project, title, nodes, heights, chapterTitles) {
 
 const consumerTitle = "AI健康管家一站式服务平台";
 const enterpriseTitle = "跨境电商异常中枢平台";
+const campaignTitle = "骑福兽，闹新春";
 const consumerFrames = createFrames(
   "consumer",
   consumerTitle,
@@ -60,6 +70,13 @@ const enterpriseFrames = createFrames(
   enterpriseNodes,
   enterpriseHeights,
   enterpriseChapterTitles,
+);
+const campaignFrames = createFrames(
+  "campaign",
+  campaignTitle,
+  campaignNodes,
+  campaignHeights,
+  campaignChapterTitles,
 );
 
 export const portfolioCases = {
@@ -94,5 +111,19 @@ export const portfolioCases = {
       title: "跨境电商异常中枢可交互 Demo",
       poster: enterpriseFrames[0].board,
     },
+  },
+  campaign: {
+    slug: "campaign",
+    title: campaignTitle,
+    category: "H5 运营活动",
+    summary: "以 AI 辅助构建春节 IP、主视觉与五关徽章收集机制，完成从概念生成到运营体验落地的完整设计。",
+    scope: "概念策划、视觉设计、H5 体验、AIGC 工作流",
+    duration: "春节运营活动项目",
+    deliverable: "移动端 H5 运营活动",
+    mediaLabel: "AI SPRING FESTIVAL CAMPAIGN",
+    tone: "campaign",
+    cover: campaignFrames[0].board,
+    frames: campaignFrames,
+    demo: null,
   },
 };

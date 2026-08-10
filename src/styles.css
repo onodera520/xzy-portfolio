@@ -1153,6 +1153,10 @@ h3 {
   background: #07183f;
 }
 
+.board-case-campaign {
+  background: #4b1514;
+}
+
 .board-shell {
   width: min(calc(100% - clamp(48px, 7vw, 132px)), 1700px);
   margin-inline: auto;

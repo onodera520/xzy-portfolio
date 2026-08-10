@@ -36,7 +36,10 @@ test("project collection resolves each public case route", async () => {
   assert.equal(getProject("enterprise").frames.filter((frame) => frame.board).length, 14);
   assert.equal(new Set(getProject("enterprise").frames.map((frame) => frame.nodeId)).size, 14);
   assert.equal(getProject("enterprise").demo.url, "/portfolio/enterprise/demo/index.html");
-  assert.equal(getProject("campaign").title, "H5 运营活动项目");
+  assert.equal(getProject("campaign").title, "骑福兽，闹新春");
+  assert.equal(getProject("campaign").tone, "campaign");
+  assert.equal(getProject("campaign").frames.length, 5);
+  assert.equal(getProject("campaign").demo, null);
   assert.equal(getProject("missing"), undefined);
 
   assert.deepEqual(
@@ -55,6 +58,14 @@ test("project collection resolves each public case route", async () => {
     getProject("enterprise").frames.map((frame) => frame.title),
     ["项目封面与背景", "AI 调研", "机会点", "视觉规范", "栅格系统", "组件库", "异常看板", "任务列表", "进度验收", "高风险订单", "库存决策", "数据复盘", "多角色走查", "Vibe Coding 与 AI 反思"],
   );
+  assert.deepEqual(
+    getProject("campaign").frames.map((frame) => frame.nodeId),
+    ["campaign:01", "campaign:02", "campaign:03", "campaign:04", "campaign:05"],
+  );
+  assert.deepEqual(
+    getProject("campaign").frames.map((frame) => frame.title),
+    ["项目封面", "AI 工作流设计", "主视觉运营设计", "徽章收集体验", "AIGC 经验总结"],
+  );
 });
 
 test("every complete artboard is local and parseable", async () => {
@@ -65,7 +76,7 @@ test("every complete artboard is local and parseable", async () => {
   for (const item of assets) {
     assert.ok(item, "every imported frame should declare a complete board asset");
     for (const publicPath of [item.src, item.mobile].filter(Boolean)) {
-      assert.match(publicPath, /^\/portfolio\/(consumer|enterprise)\//);
+      assert.match(publicPath, /^\/portfolio\/(consumer|enterprise|campaign)\//);
       assert.doesNotMatch(publicPath, /figma\.com|https?:\/\//);
       const filePath = path.join(process.cwd(), "public", ...publicPath.split("/").filter(Boolean));
       assert.equal(fs.existsSync(filePath), true, `${publicPath} should exist`);
@@ -80,7 +91,22 @@ test("every complete artboard is local and parseable", async () => {
   }
 });
 
-test("home gallery data contains two live cases and two local placeholders", async () => {
+test("campaign artboards provide local desktop and mobile WebP exports", () => {
+  for (let index = 1; index <= 5; index += 1) {
+    const number = String(index).padStart(2, "0");
+    for (const suffix of ["", "-960"]) {
+      const publicPath = `/portfolio/campaign/boards/frame-${number}${suffix}.webp`;
+      const filePath = path.join(process.cwd(), "public", ...publicPath.split("/").filter(Boolean));
+
+      assert.equal(fs.existsSync(filePath), true, `${publicPath} should exist`);
+      const bytes = fs.readFileSync(filePath);
+      assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF");
+      assert.equal(bytes.subarray(8, 12).toString("ascii"), "WEBP");
+    }
+  }
+});
+
+test("home gallery data contains three live cases and one local placeholder", async () => {
   const {
     homeMarqueeRows,
     homeSectionIds,
@@ -95,14 +121,14 @@ test("home gallery data contains two live cases and two local placeholders", asy
   );
   assert.deepEqual(
     projectGalleryItems.map((item) => item.link ?? null),
-    ["/work/consumer", "/work/enterprise", null, null],
+    ["/work/consumer", "/work/enterprise", "/work/campaign", null],
   );
-  assert.equal(projectGalleryItems.filter((item) => item.status === "COMING SOON").length, 2);
+  assert.equal(projectGalleryItems.filter((item) => item.status === "COMING SOON").length, 1);
   const campaign = projectGalleryItems.find((item) => item.slug === "campaign");
-  assert.equal(campaign.image, "/portfolio/campaign/cover-frame-4.webp");
-  assert.equal(campaign.status, "COMING SOON");
-  assert.equal(campaign.link, undefined);
-  assert.equal(campaign.alt, "骑福兽闹新春 H5 运营活动封面");
+  assert.equal(campaign.image, "/portfolio/campaign/boards/frame-01.webp");
+  assert.equal(campaign.status, "骑福兽，闹新春");
+  assert.equal(campaign.link, "/work/campaign");
+  assert.equal(campaign.alt, "骑福兽，闹新春 H5 运营活动封面");
   for (const item of projectGalleryItems) {
     assert.match(item.image, /^\/portfolio\//);
     assert.doesNotMatch(item.image, /^https?:\/\//);
@@ -209,8 +235,8 @@ test("home route renders the complete portfolio story", async () => {
   assert.equal((html.match(/ag-panel--active/g) ?? []).length, 0);
   assert.match(html, /\/portfolio\/consumer\/boards\/frame-01\.webp/);
   assert.match(html, /\/portfolio\/enterprise\/boards\/frame-01\.webp/);
-  assert.match(html, /\/portfolio\/campaign\/cover-frame-4\.webp/);
-  assert.doesNotMatch(html, /\/portfolio\/campaign\/cover\.webp/);
+  assert.match(html, /\/portfolio\/campaign\/boards\/frame-01\.webp/);
+  assert.doesNotMatch(html, /\/portfolio\/campaign\/cover-frame-4\.webp/);
   assert.match(html, /\/portfolio\/placeholders\/ai-product\.svg/);
   assert.doesNotMatch(html, /class="project-card/);
 });
@@ -283,12 +309,16 @@ test("Figma-backed case routes render only complete artboards in source order", 
   const consumerHtml = renderToStaticMarkup(
     React.createElement(App, { initialPath: "/work/consumer" }),
   );
+  const campaignHtml = renderToStaticMarkup(
+    React.createElement(App, { initialPath: "/work/campaign" }),
+  );
 
   assert.match(consumerHtml, /AI健康管家一站式服务平台/);
   assert.equal((consumerHtml.match(/class="portfolio-board"/g) ?? []).length, 15);
   assert.equal((consumerHtml.match(/data-figma-node=/g) ?? []).length, 15);
   assert.equal((consumerHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 15);
   assert.equal((consumerHtml.match(/class="line-sidebar__item"/g) ?? []).length, 15);
+  assert.match(consumerHtml, /--accent-color:#006cff/);
   assert.match(consumerHtml, /id="case-frame-consumer-1"/);
   assert.match(enterpriseHtml, /跨境电商异常中枢平台/);
   assert.match(enterpriseHtml, /可交互 Demo/);
@@ -298,9 +328,24 @@ test("Figma-backed case routes render only complete artboards in source order", 
   assert.equal((enterpriseHtml.match(/data-figma-node=/g) ?? []).length, 14);
   assert.equal((enterpriseHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 14);
   assert.equal((enterpriseHtml.match(/class="line-sidebar__item"/g) ?? []).length, 14);
+  assert.match(enterpriseHtml, /--accent-color:#6ea8ff/);
   assert.match(enterpriseHtml, /id="case-frame-enterprise-14"/);
-  assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}`, /scroll-stack-/);
-  assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}`, /figma-frame-copy|figma-metrics|figma-journey/);
+  assert.match(campaignHtml, /骑福兽，闹新春/);
+  assert.equal((campaignHtml.match(/class="portfolio-board"/g) ?? []).length, 5);
+  assert.equal((campaignHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 5);
+  assert.equal((campaignHtml.match(/class="line-sidebar__item"/g) ?? []).length, 5);
+  assert.match(campaignHtml, /--accent-color:#FF8F96/);
+  assert.match(campaignHtml, /--text-color:#D98286/);
+  assert.match(campaignHtml, /--marker-color:#B86568/);
+  assert.match(campaignHtml, /class="case-chapter-nav is-campaign"/);
+  assert.doesNotMatch(campaignHtml, /--accent-color:#006cff/);
+  assert.match(campaignHtml, /id="case-frame-campaign-5"/);
+  assert.ok(
+    campaignHtml.indexOf('data-figma-node="campaign:05"') <
+      campaignHtml.indexOf('class="case-other-link'),
+  );
+  assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}${campaignHtml}`, /scroll-stack-/);
+  assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}${campaignHtml}`, /figma-frame-copy|figma-metrics|figma-journey/);
   assert.ok(enterpriseHtml.indexOf('data-figma-node="808:9910"') < enterpriseHtml.indexOf('class="demo-embed'));
   assert.ok(enterpriseHtml.indexOf('class="demo-embed') < enterpriseHtml.indexOf('data-figma-node="808:9807"'));
   assert.ok(
@@ -398,6 +443,20 @@ test("every complete artboard has a 16px rounded corner", () => {
   const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
 
   assert.match(css, /\.portfolio-board\s*\{[^}]*border-radius:\s*16px/s);
+});
+
+test("campaign case uses its deep red project background", () => {
+  const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+  const chapterNavCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "LineSidebar.css"),
+    "utf8",
+  );
+
+  assert.match(css, /\.board-case-campaign\s*\{[^}]*background:\s*#4b1514/s);
+  assert.match(
+    chapterNavCss,
+    /\.case-chapter-nav\.is-campaign \.case-chapter-nav__mobile\s*\{[^}]*color:\s*#D98286/s,
+  );
 });
 
 test("ScrollFloat splits the other-cases label into animated characters", async () => {
