@@ -141,6 +141,51 @@ test("home gallery data contains three live cases and one local placeholder", as
   assert.equal(homeMarqueeRows.every((row) => row.trim().length > 0), true);
 });
 
+test("case footer data excludes the current case and appends the disabled AI product", async () => {
+  const { caseFooterThemes, getCaseFooterItems } = await import("../src/data/projects.js");
+
+  assert.deepEqual(
+    getCaseFooterItems("consumer").map((item) => item.slug),
+    ["enterprise", "campaign", "ai-product"],
+  );
+  assert.deepEqual(
+    getCaseFooterItems("enterprise").map((item) => item.slug),
+    ["consumer", "campaign", "ai-product"],
+  );
+  assert.deepEqual(
+    getCaseFooterItems("campaign").map((item) => item.slug),
+    ["consumer", "enterprise", "ai-product"],
+  );
+
+  const aiProduct = getCaseFooterItems("consumer").at(-1);
+  assert.equal(aiProduct.text, "AI 产品 · 即将上线");
+  assert.equal(aiProduct.image, "/portfolio/placeholders/ai-product.svg");
+  assert.equal(aiProduct.disabled, true);
+  assert.equal(aiProduct.link, undefined);
+
+  assert.deepEqual(caseFooterThemes.health, {
+    bgColor: "#ccecff",
+    textColor: "#16324b",
+    marqueeBgColor: "#16324b",
+    marqueeTextColor: "#ccecff",
+    borderColor: "#16324b",
+  });
+  assert.deepEqual(caseFooterThemes.enterprise, {
+    bgColor: "#07183f",
+    textColor: "#f4f7ff",
+    marqueeBgColor: "#f4f7ff",
+    marqueeTextColor: "#07183f",
+    borderColor: "#f4f7ff",
+  });
+  assert.deepEqual(caseFooterThemes.campaign, {
+    bgColor: "#4b1514",
+    textColor: "#fff1e8",
+    marqueeBgColor: "#fff1e8",
+    marqueeTextColor: "#4b1514",
+    borderColor: "#fff1e8",
+  });
+});
+
 test("only the enterprise gallery cover anchors to the top center", async () => {
   const { projectGalleryItems } = await import("../src/data/projects.js");
   const { default: AccordionGallery } = await vite.ssrLoadModule(
@@ -182,8 +227,8 @@ test("decision lab identifies a balanced direction", async () => {
   assert.match(result.title, /平衡/);
 });
 
-test("homepage CTA scrolls the requested section into view", async () => {
-  const { scrollToSection } = await vite.ssrLoadModule("/src/App.jsx");
+test("homepage CTA and hash navigation use their intended scroll behavior", async () => {
+  const { scrollHomeHash, scrollToSection } = await vite.ssrLoadModule("/src/App.jsx");
   let receivedOptions;
   const section = {
     scrollIntoView(options) {
@@ -200,6 +245,59 @@ test("homepage CTA scrolls the requested section into view", async () => {
   assert.equal(scrollToSection("work", documentRoot), true);
   assert.deepEqual(receivedOptions, { behavior: "smooth", block: "start" });
   assert.equal(scrollToSection("missing", documentRoot), false);
+
+  assert.equal(typeof scrollHomeHash, "function");
+  assert.equal(scrollHomeHash("#work", documentRoot), true);
+  assert.deepEqual(receivedOptions, { behavior: "auto", block: "start" });
+  assert.equal(scrollHomeHash("#missing", documentRoot), false);
+  assert.equal(scrollHomeHash("", documentRoot), false);
+});
+
+test("homepage defers cross-page hash positioning until the window load completes", async () => {
+  const { scheduleHomeHashScroll } = await vite.ssrLoadModule("/src/App.jsx");
+  let scrollOptions;
+  const listeners = new Map();
+  const frames = [];
+  const section = {
+    scrollIntoView(options) {
+      scrollOptions = options;
+    },
+  };
+  const documentRoot = {
+    readyState: "loading",
+    getElementById(id) {
+      return id === "work" ? section : null;
+    },
+  };
+  const windowRoot = {
+    location: { hash: "#work" },
+    addEventListener(type, listener) {
+      listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (listeners.get(type) === listener) listeners.delete(type);
+    },
+    requestAnimationFrame(callback) {
+      frames.push(callback);
+      return frames.length;
+    },
+    cancelAnimationFrame() {},
+  };
+
+  assert.equal(typeof scheduleHomeHashScroll, "function");
+  const cleanup = scheduleHomeHashScroll({ windowRoot, documentRoot });
+
+  assert.equal(scrollOptions, undefined);
+  assert.equal(frames.length, 0);
+  assert.equal(typeof listeners.get("load"), "function");
+
+  listeners.get("load")();
+  assert.equal(frames.length, 1);
+  frames.shift()();
+  assert.deepEqual(scrollOptions, { behavior: "auto", block: "start" });
+
+  cleanup();
+  assert.equal(listeners.has("load"), false);
 });
 
 test("home route renders the complete portfolio story", async () => {
@@ -342,7 +440,7 @@ test("Figma-backed case routes render only complete artboards in source order", 
   assert.match(campaignHtml, /id="case-frame-campaign-5"/);
   assert.ok(
     campaignHtml.indexOf('data-figma-node="campaign:05"') <
-      campaignHtml.indexOf('class="case-other-link'),
+      campaignHtml.indexOf('class="case-flowing-menu'),
   );
   assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}${campaignHtml}`, /scroll-stack-/);
   assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}${campaignHtml}`, /figma-frame-copy|figma-metrics|figma-journey/);
@@ -350,7 +448,7 @@ test("Figma-backed case routes render only complete artboards in source order", 
   assert.ok(enterpriseHtml.indexOf('class="demo-embed') < enterpriseHtml.indexOf('data-figma-node="808:9807"'));
   assert.ok(
     enterpriseHtml.indexOf('data-figma-node="808:12759"') <
-      enterpriseHtml.indexOf('class="case-other-link'),
+      enterpriseHtml.indexOf('class="case-flowing-menu'),
   );
   assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}`, /2830008192@qq\.com|2026我能找到工作吗|我是文案|figma\.com\/api\/mcp\/asset/);
 });
@@ -452,60 +550,98 @@ test("campaign case uses its deep red project background", () => {
     "utf8",
   );
 
-  assert.match(css, /\.board-case-campaign\s*\{[^}]*background:\s*#4b1514/s);
+  assert.match(css, /\.board-case-campaign\s*\{[^}]*--case-page-bg:\s*#4b1514;[^}]*background:\s*var\(--case-page-bg\)/s);
   assert.match(
     chapterNavCss,
     /\.case-chapter-nav\.is-campaign \.case-chapter-nav__mobile\s*\{[^}]*color:\s*#D98286/s,
   );
 });
 
-test("ScrollFloat splits the other-cases label into animated characters", async () => {
-  const { default: ScrollFloat } = await vite.ssrLoadModule("/src/components/ScrollFloat.jsx");
+test("FlowingMenu renders linked projects and a non-navigating AI placeholder", async () => {
+  const { default: FlowingMenu } = await vite.ssrLoadModule("/src/components/FlowingMenu.jsx");
+  const items = [
+    {
+      slug: "enterprise",
+      text: "跨境电商异常中枢平台",
+      image: "/portfolio/enterprise/boards/frame-01.webp",
+      link: "/work/enterprise",
+    },
+    {
+      slug: "campaign",
+      text: "骑福兽，闹新春",
+      image: "/portfolio/campaign/boards/frame-01.webp",
+      link: "/work/campaign",
+    },
+    {
+      slug: "ai-product",
+      text: "AI 产品 · 即将上线",
+      image: "/portfolio/placeholders/ai-product.svg",
+      disabled: true,
+    },
+  ];
   const html = renderToStaticMarkup(
-    React.createElement(ScrollFloat, null, "查看其他案例"),
+    React.createElement(FlowingMenu, {
+      items,
+      bgColor: "#ccecff",
+      textColor: "#16324b",
+      marqueeBgColor: "#16324b",
+      marqueeTextColor: "#ccecff",
+      borderColor: "#16324b",
+    }),
   );
 
-  assert.equal((html.match(/class="char"/g) ?? []).length, 6);
-  assert.match(html, /查<\/span><span class="char">看/);
-  assert.match(html, /案<\/span><span class="char">例/);
+  assert.equal((html.match(/class="flowing-menu__item"/g) ?? []).length, 3);
+  assert.match(html, /href="\/work\/enterprise"/);
+  assert.match(html, /href="\/work\/campaign"/);
+  assert.match(html, /aria-disabled="true"/);
+  assert.match(html, /AI 产品 · 即将上线/);
+  assert.doesNotMatch(html, /href="\/work\/ai-product"/);
+  assert.match(html, /background-color:#ccecff/);
+  assert.match(html, /border-color:#16324b/);
 });
 
-test("every project route ends with the shared animated other-cases link", async () => {
+test("every project route ends with its themed menu of other projects", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const cases = [
+    {
+      route: "/work/consumer",
+      excluded: "AI健康管家一站式服务平台",
+      included: ["跨境电商异常中枢平台", "骑福兽，闹新春"],
+      background: "#ccecff",
+      foreground: "#16324b",
+    },
+    {
+      route: "/work/enterprise",
+      excluded: "跨境电商异常中枢平台",
+      included: ["AI健康管家一站式服务平台", "骑福兽，闹新春"],
+      background: "#07183f",
+      foreground: "#f4f7ff",
+    },
+    {
+      route: "/work/campaign",
+      excluded: "骑福兽，闹新春",
+      included: ["AI健康管家一站式服务平台", "跨境电商异常中枢平台"],
+      background: "#4b1514",
+      foreground: "#fff1e8",
+    },
+  ];
 
-  for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign"]) {
+  for (const { route, excluded, included, background, foreground } of cases) {
     const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
+    const footerStart = html.indexOf('class="case-flowing-menu"');
+    assert.notEqual(footerStart, -1, route);
+    const footer = html.slice(footerStart);
 
-    assert.equal((html.match(/class="case-other-link"/g) ?? []).length, 1, route);
-    assert.match(html, /href="\/#work"/);
-    assert.equal((html.match(/class="char"/g) ?? []).length, 6, route);
-    assert.match(html, /查看其他案例/);
+    assert.equal((footer.match(/class="flowing-menu__item"/g) ?? []).length, 3, route);
+    assert.doesNotMatch(footer, new RegExp(excluded));
+    for (const title of included) assert.match(footer, new RegExp(title));
+    assert.match(footer, /AI 产品 · 即将上线/);
+    assert.match(footer, /aria-disabled="true"/);
+    assert.equal((footer.match(/href="\/work\//g) ?? []).length, 2, route);
+    assert.match(footer, new RegExp(`background-color:${background}`));
+    assert.match(footer, new RegExp(`border-color:${foreground}`));
+    assert.doesNotMatch(footer, /查看其他案例|depth-text/);
   }
-});
-
-test("the other-cases footer always runs the full ScrollFloat effect", () => {
-  const pageCss = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
-  const animationCss = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "ScrollFloat.css"),
-    "utf8",
-  );
-  const animationSource = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "ScrollFloat.jsx"),
-    "utf8",
-  );
-  const footerSource = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "CaseOtherLink.jsx"),
-    "utf8",
-  );
-
-  assert.match(pageCss, /\.case-other-link\s+a\s*\{[^}]*color:\s*#000/s);
-  assert.match(pageCss, /font-size:\s*clamp\(36px,\s*4vw,\s*56px\)/);
-  assert.match(pageCss, /font-size:\s*clamp\(28px,\s*8vw,\s*36px\)/);
-  assert.match(pageCss, /font-weight:\s*900/);
-  assert.doesNotMatch(animationSource, /prefers-reduced-motion/);
-  assert.doesNotMatch(animationCss, /prefers-reduced-motion|transform:\s*none\s*!important/);
-  assert.match(footerSource, /scrollStart="top bottom"/);
-  assert.match(footerSource, /scrollEnd="bottom bottom"/);
 });
 
 test("AccordionGallery starts with four equal, inactive project panels", async () => {

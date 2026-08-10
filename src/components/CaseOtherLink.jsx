@@ -1,19 +1,13 @@
-import ScrollFloat from "./ScrollFloat.jsx";
+import FlowingMenu from "./FlowingMenu.jsx";
+import { caseFooterThemes, getCaseFooterItems } from "../data/projects.js";
 
-export function CaseOtherLink() {
+export function CaseOtherLink({ project }) {
+  const items = getCaseFooterItems(project.slug);
+  const theme = caseFooterThemes[project.tone];
+
   return (
-    <footer className="case-other-link">
-      <a href="/#work" aria-label="返回首页查看其他案例">
-        <ScrollFloat
-          animationDuration={1}
-          ease="back.inOut(2)"
-          scrollStart="top bottom"
-          scrollEnd="bottom bottom"
-          stagger={0.03}
-        >
-          查看其他案例
-        </ScrollFloat>
-      </a>
+    <footer className="case-flowing-menu">
+      <FlowingMenu items={items} speed={15} {...theme} />
     </footer>
   );
 }

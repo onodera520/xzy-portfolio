@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { AITerminal } from "./components/AITerminal.jsx";
 import { HomeMarquee } from "./components/HomeMarquee.jsx";
 import { InteractionLab } from "./components/InteractionLab.jsx";
@@ -12,17 +14,70 @@ import BorderGlow from "./components/BorderGlow.jsx";
 import PillNav from "./components/PillNav.jsx";
 import ProfileCard from "./components/ProfileCard.jsx";
 import { HomeLiquidBackground } from "./components/HomeLiquidBackground.jsx";
-import { getProject, projectGalleryItems } from "./data/projects.js";
+import { getProject, homeSectionIds, projectGalleryItems } from "./data/projects.js";
 
 export function scrollToSection(
   sectionId,
   documentRoot = typeof document === "undefined" ? null : document,
+  behavior = "smooth",
 ) {
   const section = documentRoot?.getElementById(sectionId);
   if (!section) return false;
 
-  section.scrollIntoView({ behavior: "smooth", block: "start" });
+  section.scrollIntoView({ behavior, block: "start" });
   return true;
+}
+
+export function scrollHomeHash(
+  hash,
+  documentRoot = typeof document === "undefined" ? null : document,
+) {
+  if (typeof hash !== "string" || !hash.startsWith("#")) return false;
+
+  let sectionId;
+  try {
+    sectionId = decodeURIComponent(hash.slice(1));
+  } catch {
+    return false;
+  }
+
+  if (!homeSectionIds.includes(sectionId)) return false;
+  return scrollToSection(sectionId, documentRoot, "auto");
+}
+
+export function scheduleHomeHashScroll({
+  windowRoot = typeof window === "undefined" ? null : window,
+  documentRoot = typeof document === "undefined" ? null : document,
+} = {}) {
+  if (!windowRoot || !documentRoot) return () => {};
+
+  let frameId = null;
+  let active = true;
+
+  const scrollAfterPaint = () => {
+    if (!active) return;
+    frameId = windowRoot.requestAnimationFrame(() => {
+      if (!active) return;
+      scrollHomeHash(windowRoot.location?.hash ?? "", documentRoot);
+    });
+  };
+
+  const handleLoad = () => {
+    windowRoot.removeEventListener("load", handleLoad);
+    scrollAfterPaint();
+  };
+
+  if (documentRoot.readyState === "complete") {
+    scrollAfterPaint();
+  } else {
+    windowRoot.addEventListener("load", handleLoad, { once: true });
+  }
+
+  return () => {
+    active = false;
+    windowRoot.removeEventListener("load", handleLoad);
+    if (frameId !== null) windowRoot.cancelAnimationFrame(frameId);
+  };
 }
 
 function Navigation({ homeLinks = false, inverted = false }) {
@@ -74,6 +129,10 @@ function MediaPlaceholder({ label, className = "" }) {
 }
 
 function HomePage() {
+  useEffect(() => {
+    return scheduleHomeHashScroll();
+  }, []);
+
   return (
     <>
       <HomeLiquidBackground />
@@ -308,7 +367,7 @@ function CasePage({ project }) {
         </div>
 
       </main>
-      <CaseOtherLink />
+      <CaseOtherLink project={project} />
     </>
   );
 }

@@ -168,6 +168,54 @@ export const projectGalleryItems = [
   },
 ];
 
+export const caseFooterThemes = {
+  health: {
+    bgColor: "#ccecff",
+    textColor: "#16324b",
+    marqueeBgColor: "#16324b",
+    marqueeTextColor: "#ccecff",
+    borderColor: "#16324b",
+  },
+  enterprise: {
+    bgColor: "#07183f",
+    textColor: "#f4f7ff",
+    marqueeBgColor: "#f4f7ff",
+    marqueeTextColor: "#07183f",
+    borderColor: "#f4f7ff",
+  },
+  campaign: {
+    bgColor: "#4b1514",
+    textColor: "#fff1e8",
+    marqueeBgColor: "#fff1e8",
+    marqueeTextColor: "#4b1514",
+    borderColor: "#fff1e8",
+  },
+};
+
+export function getCaseFooterItems(currentSlug) {
+  const completedProjects = projects
+    .filter((project) => project.slug !== currentSlug)
+    .map((project) => ({
+      slug: project.slug,
+      text: project.title,
+      image: project.cover.src,
+      link: `/work/${project.slug}`,
+      alt: project.cover.alt,
+    }));
+  const aiProduct = projectGalleryItems.find((item) => item.slug === "ai-product");
+
+  return [
+    ...completedProjects,
+    {
+      slug: aiProduct.slug,
+      text: "AI 产品 · 即将上线",
+      image: aiProduct.image,
+      alt: aiProduct.alt,
+      disabled: true,
+    },
+  ];
+}
+
 export function getProject(slug) {
   return projects.find((project) => project.slug === slug);
 }

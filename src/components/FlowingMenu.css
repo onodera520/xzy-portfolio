@@ -1,0 +1,127 @@
+.flowing-menu {
+  width: 100%;
+  height: clamp(420px, 46vw, 640px);
+  overflow: hidden;
+}
+
+.flowing-menu__nav {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.flowing-menu__item {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  border-top: 1px solid;
+  text-align: center;
+}
+
+.flowing-menu__item:first-child {
+  border-top: 0;
+}
+
+.flowing-menu__link {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 24px;
+  cursor: pointer;
+  font-size: clamp(24px, 3vw, 48px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.flowing-menu__link.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.flowing-menu__link:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: -9px;
+}
+
+.flowing-menu__marquee {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translate3d(0, 101%, 0);
+}
+
+.flowing-menu__marquee-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.flowing-menu__marquee-inner {
+  position: relative;
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+}
+
+.flowing-menu__marquee-part {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.flowing-menu__marquee-part > span {
+  padding-inline: clamp(14px, 1.5vw, 28px);
+  font-size: clamp(24px, 3vw, 48px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.flowing-menu__image {
+  width: clamp(132px, 15vw, 230px);
+  height: clamp(58px, 7vw, 94px);
+  margin: 16px clamp(18px, 2vw, 38px);
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media (max-width: 767px) {
+  .flowing-menu {
+    height: 360px;
+  }
+
+  .flowing-menu__link,
+  .flowing-menu__marquee-part > span {
+    font-size: clamp(20px, 6.2vw, 28px);
+  }
+
+  .flowing-menu__link {
+    padding-inline: 16px;
+    white-space: normal;
+  }
+
+  .flowing-menu__image {
+    width: 118px;
+    height: 58px;
+    margin-inline: 16px;
+  }
+}

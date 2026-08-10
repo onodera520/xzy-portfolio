@@ -52,7 +52,7 @@ export function FigmaCaseStudy({ project, Navigation }) {
           </div>
         </div>
 
-        <CaseOtherLink />
+        <CaseOtherLink project={project} />
       </main>
     </div>
   );

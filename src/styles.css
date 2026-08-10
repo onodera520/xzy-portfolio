@@ -841,34 +841,9 @@ h3 {
   letter-spacing: -0.04em;
 }
 
-.case-other-link {
-  min-height: clamp(240px, 30vw, 420px);
-  display: grid;
-  place-items: center;
-  padding: clamp(48px, 8vw, 120px) 24px;
-  background: #f2f1ec;
-  color: #000;
-  text-align: center;
-}
-
-.case-other-link a {
-  display: block;
-  color: #000;
-}
-
-.case-other-link .scroll-float-text {
-  color: #000;
-  font-size: clamp(36px, 4vw, 56px);
-  font-weight: 900;
-  letter-spacing: -0.045em;
-}
-
-.case-other-link a:hover .scroll-float-text {
-  opacity: 0.62;
-}
-
-.case-other-link a:focus-visible {
-  outline-color: #000;
+.case-flowing-menu {
+  width: 100%;
+  overflow: clip;
 }
 
 @media (max-width: 520px) {
@@ -1146,15 +1121,18 @@ h3 {
 }
 
 .board-case-health {
-  background: #ccecff;
+  --case-page-bg: #ccecff;
+  background: var(--case-page-bg);
 }
 
 .board-case-enterprise {
-  background: #07183f;
+  --case-page-bg: #07183f;
+  background: var(--case-page-bg);
 }
 
 .board-case-campaign {
-  background: #4b1514;
+  --case-page-bg: #4b1514;
+  background: var(--case-page-bg);
 }
 
 .board-shell {
@@ -1298,14 +1276,6 @@ h3 {
     flex-direction: column;
   }
 
-  .case-other-link {
-    min-height: 220px;
-    padding: 48px 20px;
-  }
-
-  .case-other-link .scroll-float-text {
-    font-size: clamp(28px, 8vw, 36px);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
