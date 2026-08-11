@@ -1168,6 +1168,18 @@ test("every public page exposes the same grouped sidebar menu", async () => {
   }
 });
 
+test("every public page shares one viewport ClickSpark layer", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+
+  for (const route of ["/", "/work/consumer", "/work/enterprise", "/work/campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
+
+    assert.equal((html.match(/data-click-spark="true"/g) ?? []).length, 1, route);
+    assert.match(html, /data-spark-count="8"/, route);
+    assert.match(html, /data-spark-duration="320"/, route);
+  }
+});
+
 test("the fixed sidebar is not trapped by a transformed navigation containing block", () => {
   const styles = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
 

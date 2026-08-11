@@ -13,6 +13,7 @@ import SpecularButton from "./components/SpecularButton.jsx";
 import PillNav from "./components/PillNav.jsx";
 import EditorialAbout from "./components/EditorialAbout.jsx";
 import StaggeredMenu from "./components/StaggeredMenu.jsx";
+import ClickSpark from "./components/ClickSpark.jsx";
 import { aboutProfile } from "./data/aboutProfile.js";
 import { getProject, homeSectionIds, projectGalleryItems } from "./data/projects.js";
 import { sidebarMenuGroups, sidebarStatusText } from "./data/sidebarMenu.js";
@@ -361,14 +362,29 @@ function NotFoundPage() {
 export default function App({ initialPath }) {
   const path = initialPath ?? (typeof window === "undefined" ? "/" : window.location.pathname);
   const match = path.match(/^\/work\/([^/]+)\/?$/);
+  let page;
 
   if (match) {
     const project = getProject(match[1]);
-    if (!project) return <NotFoundPage />;
-    return project.frames
-      ? <FigmaCaseStudy Navigation={Navigation} project={project} />
-      : <CasePage project={project} />;
+    page = !project
+      ? <NotFoundPage />
+      : project.frames
+        ? <FigmaCaseStudy Navigation={Navigation} project={project} />
+        : <CasePage project={project} />;
+  } else {
+    page = path === "/" ? <HomePage /> : <NotFoundPage />;
   }
 
-  return path === "/" ? <HomePage /> : <NotFoundPage />;
+  return (
+    <ClickSpark
+      sparkColor="#ffffff"
+      sparkSize={10}
+      sparkRadius={18}
+      sparkCount={8}
+      duration={320}
+      easing="ease-out"
+    >
+      {page}
+    </ClickSpark>
+  );
 }

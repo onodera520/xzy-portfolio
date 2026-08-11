@@ -1,0 +1,17 @@
+.click-spark-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  contain: strict;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .click-spark-canvas {
+    display: none;
+  }
+}
