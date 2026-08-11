@@ -11,8 +11,9 @@ import BlurText from "./components/BlurText.jsx";
 import FadeContent from "./components/FadeContent.jsx";
 import SpecularButton from "./components/SpecularButton.jsx";
 import PillNav from "./components/PillNav.jsx";
-import ProfileCard from "./components/ProfileCard.jsx";
+import EditorialAbout from "./components/EditorialAbout.jsx";
 import StaggeredMenu from "./components/StaggeredMenu.jsx";
+import { aboutProfile } from "./data/aboutProfile.js";
 import { getProject, homeSectionIds, projectGalleryItems } from "./data/projects.js";
 import { sidebarMenuGroups, sidebarStatusText } from "./data/sidebarMenu.js";
 
@@ -199,31 +200,9 @@ function HomePage() {
 
         <section className="about-section section" id="about">
           <div className="shell">
-            <div className="section-index">ABOUT / ME</div>
-            <div className="about-layout">
-              <FadeContent className="home-reveal about-card-reveal" duration={1.05} delay={0.04}>
-                <div className="about-card-column">
-                  <ProfileCard
-                    avatarUrl="/about/ziyi-xue-cutout.png"
-                    name="Ziyi Xue"
-                    title="求职方向：UI/UX/AI体验设计"
-                  />
-                </div>
-              </FadeContent>
-              <FadeContent className="home-reveal" duration={1.05} delay={0.12}>
-                <div className="about-copy">
-                  <p>我从研究和业务语境出发，把复杂流程整理成清晰、可理解、可执行的体验。</p>
-                  <dl id="about-details">
-                    <div><dt>关注方向</dt><dd>产品设计、UX 设计</dd></div>
-                    <div><dt>工作方式</dt><dd>研究、定义、原型、验证</dd></div>
-                    <div><dt>当前状态</dt><dd>开放求职机会</dd></div>
-                  </dl>
-                </div>
-              </FadeContent>
-            </div>
-            <div className="about-signature" aria-hidden="true">
-              <span>RESEARCH</span><b>×</b><span>DESIGN</span><b>×</b><span>DELIVERY</span>
-            </div>
+            <FadeContent className="home-reveal" duration={1.05} delay={0.04}>
+              <EditorialAbout profile={aboutProfile} />
+            </FadeContent>
           </div>
         </section>
 

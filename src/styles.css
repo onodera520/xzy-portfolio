@@ -2254,52 +2254,6 @@ a.demo-open-link:focus-visible {
   font-weight: 650;
 }
 
-.home-page .about-layout {
-  grid-template-columns: minmax(320px, 0.82fr) minmax(320px, 1.18fr);
-  align-items: center;
-  gap: clamp(72px, 9vw, 164px);
-}
-
-.about-card-reveal {
-  min-width: 0;
-}
-
-.about-card-column {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.home-page .about-copy > p {
-  color: rgba(255, 255, 255, 0.68);
-}
-
-.home-page .about-copy dl > div {
-  border-color: rgba(255, 255, 255, 0.16);
-}
-
-.home-page .about-copy dt {
-  color: rgba(255, 255, 255, 0.44);
-}
-
-.about-signature {
-  margin-top: clamp(74px, 9vw, 150px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.58);
-  font-size: clamp(12px, 1vw, 16px);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.about-signature b {
-  color: var(--home-pink);
-  font-size: 22px;
-}
-
 .home-page .work-section {
   padding-top: clamp(80px, 8vw, 140px);
 }
@@ -2569,21 +2523,8 @@ a.demo-open-link:focus-visible {
 }
 
 @media (max-width: 1024px) {
-  .home-page .about-layout,
   .home-page .ai-layout {
     grid-template-columns: 1fr;
-  }
-
-  .home-page .about-layout {
-    gap: 72px;
-  }
-
-  .about-card-column {
-    justify-content: center;
-  }
-
-  .home-page .about-copy {
-    max-width: 720px;
   }
 
   .home-page .ai-layout {
@@ -2692,21 +2633,6 @@ a.demo-open-link:focus-visible {
 
   .home-page .section {
     padding-block: 96px;
-  }
-
-  .home-page .about-layout {
-    margin-top: 52px;
-    gap: 58px;
-  }
-
-  .home-page .about-copy > p {
-    margin-bottom: 38px;
-    font-size: 17px;
-  }
-
-  .about-signature {
-    margin-top: 70px;
-    flex-wrap: wrap;
   }
 
   .home-page .work-section {
@@ -3086,29 +3012,10 @@ body {
 }
 
 .home-page .section-index,
-.home-page .about-copy > p,
-.home-page .about-copy dt,
 .home-page .section-heading-row p,
 .home-page .lab-heading-row p,
 .ai-heading-row > p {
   color: rgb(11 11 11 / 58%);
-}
-
-.home-page .about-copy dl > div,
-.about-signature {
-  border-color: var(--bloom-line);
-}
-
-.about-signature {
-  color: rgb(11 11 11 / 58%);
-}
-
-.about-signature b {
-  color: var(--bloom-ink);
-}
-
-.about-card-column {
-  filter: grayscale(1);
 }
 
 .home-page .section-heading h2,

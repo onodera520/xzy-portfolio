@@ -13,7 +13,7 @@ function RichText({ parts }) {
 export default function EditorialAbout({ profile }) {
   return (
     <article className="editorial-about" aria-labelledby="editorial-about-name">
-      <div className="editorial-about__info">
+      <div className="editorial-about__info" id="about-details">
         <header className="editorial-about__header">
           <p className="editorial-about__direction">{profile.direction}</p>
           <h2 id="editorial-about-name">{profile.name}</h2>

@@ -308,16 +308,16 @@ test("home route renders the complete portfolio story", async () => {
   assert.match(html, /Experience Designer \/ AI Product \/ Vibe Coding/);
   assert.match(html, /VIEW PROJECTS/);
   assert.match(html, /XUE&#x27;S LAB/);
-  assert.match(html, /ABOUT \/ ME/);
+  assert.match(html, /薛梓毅/);
   assert.match(html, /Ziyi Xue/);
-  assert.match(html, /求职方向：UI\/UX\/AI体验设计/);
+  assert.match(html, /UI \/ UX \/ AI 体验设计/);
   assert.match(html, /\/about\/ziyi-xue-cutout\.png/);
-  assert.match(html, /我从研究和业务语境出发/);
-  assert.match(html, /产品设计、UX 设计/);
-  assert.match(html, /研究、定义、原型、验证/);
-  assert.match(html, /开放求职机会/);
-  assert.match(html, /RESEARCH[\s\S]*DESIGN[\s\S]*DELIVERY/);
-  assert.doesNotMatch(html, /我是一名正在寻找产品设计与用户体验岗位/);
+  assert.match(html, /浙江数智交院科技股份有限公司/);
+  assert.match(html, /href="tel:18668155572"/);
+  assert.match(html, /href="mailto:2830008192@qq\.com"/);
+  assert.match(html, /onodera1006/);
+  assert.doesNotMatch(html, /ABOUT \/ ME/);
+  assert.doesNotMatch(html, /pc-card-wrapper|data-tilt-enabled/);
   assert.match(html, /精选作品/);
   assert.match(html, /设计决策实验室/);
   assert.match(html, /设计过程与 AI/);
@@ -849,7 +849,7 @@ test("every public route uses the editorial five-link navigation with CV and con
   }
 });
 
-test("the ProfileCard portrait is a local PNG with transparency", () => {
+test("the editorial About portrait is a local PNG with transparency", () => {
   const portraitPath = path.join(process.cwd(), "public", "about", "ziyi-xue-cutout.png");
   assert.equal(fs.existsSync(portraitPath), true);
 
@@ -860,33 +860,23 @@ test("the ProfileCard portrait is a local PNG with transparency", () => {
   assert.ok([4, 6].includes(bytes[25]), "portrait PNG must include an alpha channel");
 });
 
-test("ProfileCard renders only the portrait identity and role", async () => {
-  const { default: ProfileCard } = await vite.ssrLoadModule("/src/components/ProfileCard.jsx");
-  const html = renderToStaticMarkup(
-    React.createElement(ProfileCard, {
-      avatarUrl: "/about/ziyi-xue-cutout.png",
-      name: "Ziyi Xue",
-      title: "求职方向：UI/UX/AI体验设计",
-    }),
-  );
-
-  assert.match(html, /class="pc-card-wrapper"/);
-  assert.match(html, /src="\/about\/ziyi-xue-cutout\.png"/);
-  assert.match(html, /Ziyi Xue/);
-  assert.match(html, /求职方向：UI\/UX\/AI体验设计/);
-  assert.doesNotMatch(html, /pc-user-info|pc-mini-avatar|pc-contact-btn|@javicodes|Online/);
-});
-
-test("ProfileCard limits tilt to fine hover pointers and cleans up cancelled gestures", () => {
-  const source = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "ProfileCard.jsx"),
+test("editorial About keeps its desktop split and mobile portrait-first layout", () => {
+  const css = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "EditorialAbout.css"),
     "utf8",
   );
 
-  assert.match(source, /matchMedia\("\(hover: hover\) and \(pointer: fine\)"\)/);
-  assert.match(source, /matchMedia\("\(prefers-reduced-motion: reduce\)"\)/);
-  assert.match(source, /addEventListener\("pointercancel", handlePointerLeave\)/);
-  assert.match(source, /removeEventListener\("pointercancel", handlePointerLeave\)/);
+  assert.match(
+    css,
+    /grid-template-columns:\s*minmax\(0,\s*58fr\)\s+minmax\(320px,\s*42fr\)/,
+  );
+  assert.match(css, /border-radius:\s*32px/);
+  assert.match(css, /filter:\s*grayscale\(1\)/);
+  assert.match(
+    css,
+    /@media\s*\(max-width:\s*767px\)[\s\S]*grid-template-areas:\s*"portrait"\s*"info"/,
+  );
+  assert.match(css, /overflow-wrap:\s*anywhere/);
 });
 
 test("editorial About data contains the complete public profile", async () => {
@@ -927,6 +917,7 @@ test("EditorialAbout renders quantified achievements as semantic emphasis", asyn
   assert.match(html, /loading="lazy"/);
   assert.match(html, /width="1024"/);
   assert.match(html, /height="1536"/);
+  assert.match(html, /id="about-details"/);
 });
 
 test("removed color backgrounds and their Three.js dependency do not ship", () => {
