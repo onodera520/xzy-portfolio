@@ -13,9 +13,11 @@ export default function PillNav({
   className = "",
   initialLoadAnimation = true,
   frameless = false,
-  motionProfile,
+  baseColor = "#000000",
+  pillColor = "transparent",
+  hoveredPillTextColor = "#ffffff",
+  pillTextColor = "#000000",
 }) {
-  const appleMotion = motionProfile === "apple";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const circleRefs = useRef([]);
   const timelineRefs = useRef([]);
@@ -42,7 +44,6 @@ export default function PillNav({
         const diameter = Math.ceil(2 * radius) + 2;
         const delta = Math.ceil(radius - Math.sqrt(Math.max(0, (radius * radius) - ((width * width) / 4)))) + 1;
         const originY = diameter - delta;
-
         Object.assign(circle.style, {
           width: `${diameter}px`,
           height: `${diameter}px`,
@@ -53,27 +54,23 @@ export default function PillNav({
         const hoverLabel = pill.querySelector(".pill-label-hover");
         gsap.set(circle, {
           xPercent: -50,
-          yPercent: appleMotion ? 38 : 0,
-          scale: appleMotion ? 0.95 : 0,
-          opacity: appleMotion ? 0 : 1,
+          scale: 0,
           transformOrigin: `50% ${originY}px`,
         });
         gsap.set(label, { y: 0 });
-        gsap.set(hoverLabel, { y: Math.ceil(height + 32), opacity: 0 });
+        gsap.set(hoverLabel, { y: Math.ceil(height + 100), opacity: 0 });
 
         timelineRefs.current[index]?.kill();
         timelineRefs.current[index] = gsap.timeline({ paused: true })
           .to(circle, {
-            scale: appleMotion ? 1.05 : 1.2,
+            scale: 1.2,
             xPercent: -50,
-            yPercent: 0,
-            opacity: 1,
-            duration: reducedMotion ? 0 : (appleMotion ? 0.22 : 1),
+            duration: reducedMotion ? 0 : 2,
             ease,
             overwrite: "auto",
           }, 0)
-          .to(label, { y: -(height + 8), duration: reducedMotion ? 0 : (appleMotion ? 0.22 : 1), ease, overwrite: "auto" }, 0)
-          .to(hoverLabel, { y: 0, opacity: 1, duration: reducedMotion ? 0 : (appleMotion ? 0.22 : 1), ease, overwrite: "auto" }, 0);
+          .to(label, { y: -(height + 8), duration: reducedMotion ? 0 : 2, ease, overwrite: "auto" }, 0)
+          .to(hoverLabel, { y: 0, opacity: 1, duration: reducedMotion ? 0 : 2, ease, overwrite: "auto" }, 0);
       });
     };
 
@@ -86,7 +83,7 @@ export default function PillNav({
       gsap.fromTo(
         desktopRef.current,
         { opacity: 0, y: -10, scaleX: 0.86, transformOrigin: "right center" },
-        { opacity: 1, y: 0, scaleX: 1, duration: appleMotion ? 0.4 : 0.65, ease },
+        { opacity: 1, y: 0, scaleX: 1, duration: 0.6, ease },
       );
     } else if (desktopRef.current) {
       gsap.set(desktopRef.current, { opacity: 1, y: 0, scaleX: 1 });
@@ -99,7 +96,7 @@ export default function PillNav({
       activeTweenRefs.current.forEach((tween) => tween?.kill());
       gsap.killTweensOf([desktopRef.current, toggleRef.current, mobileMenuRef.current]);
     };
-  }, [appleMotion, ease, initialLoadAnimation, items]);
+  }, [ease, initialLoadAnimation, items]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
@@ -145,17 +142,24 @@ export default function PillNav({
     activeTweenRefs.current[index] = timeline.tweenTo(end ? timeline.duration() : 0, {
       duration: immediate || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
         ? 0
-        : appleMotion ? (end ? 0.22 : 0.16) : (end ? 0.32 : 0.22),
+        : end ? 0.3 : 0.2,
       ease,
       overwrite: "auto",
     });
+  };
+
+  const cssVars = {
+    "--base": baseColor,
+    "--pill-bg": pillColor,
+    "--hover-text": hoveredPillTextColor,
+    "--pill-text": pillTextColor,
   };
 
   return (
     <nav
       className={`pill-nav${frameless ? " pill-nav--frameless" : ""}${className ? ` ${className}` : ""}`}
       aria-label="主导航"
-      data-motion-profile={appleMotion ? "apple" : undefined}
+      style={cssVars}
     >
       <div className="pill-nav-desktop" ref={desktopRef}>
         <ul className="pill-list">
@@ -163,7 +167,7 @@ export default function PillNav({
             <li key={item.href}>
               <a
                 href={item.href}
-                className={`pill${activeHref === item.href ? " is-active" : ""}`}
+                className="pill"
                 aria-label={item.ariaLabel ?? item.label}
                 onPointerEnter={(event) => {
                   if (event.pointerType !== "touch") playTo(index, true);

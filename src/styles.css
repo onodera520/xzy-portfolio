@@ -1704,6 +1704,20 @@ a.demo-open-link:focus-visible {
   opacity: 0.65;
 }
 
+.board-case-enterprise .demo-embed {
+  color: #0b0b0b;
+}
+
+.board-case-enterprise .demo-heading p,
+.board-case-enterprise .demo-open-link {
+  color: #0b0b0b;
+}
+
+.board-case-enterprise a.demo-open-link:hover,
+.board-case-enterprise a.demo-open-link:focus-visible {
+  color: #0b0b0b;
+}
+
 .demo-viewport {
   position: relative;
   aspect-ratio: 2560 / 1480;

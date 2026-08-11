@@ -83,14 +83,14 @@ export function scheduleHomeHashScroll({
   };
 }
 
-function Navigation({ homeLinks = false, inverted = false, motionProfile }) {
+function Navigation({ homeLinks = false, inverted = false }) {
   const anchor = homeLinks ? "#" : "/#";
   const items = [
-    { label: "ABOUT", href: `${anchor}about` },
-    { label: "PROJECTS", href: `${anchor}work` },
-    { label: "PROCESS", href: `${anchor}process` },
-    { label: "LAB", href: `${anchor}lab` },
-    { label: "CONTACT", href: `${anchor}contact` },
+    { label: "关于", href: `${anchor}about` },
+    { label: "作品", href: `${anchor}work` },
+    { label: "过程", href: `${anchor}process` },
+    { label: "互动实验", href: `${anchor}lab` },
+    { label: "联系", href: `${anchor}contact` },
   ];
 
   return (
@@ -102,14 +102,13 @@ function Navigation({ homeLinks = false, inverted = false, motionProfile }) {
             groups={sidebarMenuGroups}
             panelColor="#F7F6F2"
             statusText={sidebarStatusText}
-            triggerTone={inverted ? "light" : "dark"}
+            triggerTone="dark"
           />
           <a className="wordmark" href="/" aria-label="XUE STUDIO 作品集首页">XUE STUDIO</a>
         </div>
         <PillNav
           items={items}
           activeHref={homeLinks ? undefined : `${anchor}work`}
-          motionProfile={motionProfile}
         />
         <div className="nav-actions">
           <a href={`${anchor}contact`} aria-label="查看简历信息">CV</a>
@@ -136,7 +135,7 @@ function HomePage() {
 
   return (
     <>
-      <Navigation homeLinks motionProfile="apple" />
+      <Navigation homeLinks />
       <main className="home-page">
         <section className="hero" id="top">
           <div className="hero-stage shell">

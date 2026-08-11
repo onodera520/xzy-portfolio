@@ -373,16 +373,65 @@ test("home headings use a semantic one-time character reveal", async () => {
   assert.match(html, /class="fade-content home-reveal"/);
 });
 
-test("homepage keeps Apple pill motion while restoring the original sidebar rhythm", async () => {
+test("homepage uses the standard React Bits pill motion without a pill logo", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
   const caseHtml = renderToStaticMarkup(
     React.createElement(App, { initialPath: "/work/consumer" }),
   );
 
-  assert.equal((homeHtml.match(/data-motion-profile="apple"/g) ?? []).length, 1);
+  assert.doesNotMatch(homeHtml, /data-motion-profile="apple"/);
+  assert.doesNotMatch(homeHtml, /class="pill-logo"/);
   assert.ok((homeHtml.match(/data-enter-reveal="true"/g) ?? []).length >= 10);
   assert.doesNotMatch(caseHtml, /data-motion-profile="apple"/);
+});
+
+test("PillNav exposes a black hover fill and transparent idle pills without an icon", async () => {
+  const { default: PillNav } = await vite.ssrLoadModule("/src/components/PillNav.jsx");
+  const html = renderToStaticMarkup(
+    React.createElement(PillNav, {
+      items: [{ label: "作品", href: "#work" }],
+    }),
+  );
+
+  assert.match(html, /style="--base:#000000;--pill-bg:transparent;--hover-text:#ffffff;--pill-text:#000000"/);
+  assert.doesNotMatch(html, /class="pill-logo"|<img/);
+});
+
+test("homepage navigation uses Chinese labels with the existing section anchors", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  for (const [label, href] of [
+    ["关于", "#about"],
+    ["作品", "#work"],
+    ["过程", "#process"],
+    ["互动实验", "#lab"],
+    ["联系", "#contact"],
+  ]) {
+    assert.match(html, new RegExp(`<a href="${href}"[^>]*aria-label="${label}"`));
+  }
+});
+
+test("homepage uses one shared capsule with transparent hover-only items", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+  const detailHtml = renderToStaticMarkup(
+    React.createElement(App, { initialPath: "/work/consumer" }),
+  );
+  const detailDesktopNav = detailHtml.match(
+    /<div class="pill-nav-desktop">[\s\S]*?<\/div>/,
+  )?.[0] ?? "";
+  const pillCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "PillNav.css"),
+    "utf8",
+  );
+
+  assert.doesNotMatch(homeHtml, /pill-nav--frameless/);
+  assert.match(homeHtml, /--pill-bg:transparent/);
+  assert.equal((homeHtml.match(/class="pill-hover-circle"/g) ?? []).length, 5);
+  assert.doesNotMatch(detailDesktopNav, /is-active/);
+  assert.match(pillCss, /\.pill-nav \.pill::after\s*\{[^}]*content:\s*none/s);
 });
 
 test("homepage continuous effects pause responsibly and the gallery restores its original motion", async () => {
@@ -483,6 +532,27 @@ test("Figma-backed case routes render only complete artboards in source order", 
       enterpriseHtml.indexOf('class="case-flowing-menu'),
   );
   assert.doesNotMatch(`${consumerHtml}${enterpriseHtml}`, /2830008192@qq\.com|2026我能找到工作吗|我是文案|figma\.com\/api\/mcp\/asset/);
+});
+
+test("portfolio detail chrome stays readable on the light editorial background", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const detailHtml = ["consumer", "enterprise", "campaign"]
+    .map((slug) => renderToStaticMarkup(
+      React.createElement(App, { initialPath: `/work/${slug}` }),
+    ))
+    .join("");
+  const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+
+  assert.equal((detailHtml.match(/sm-menu-trigger sm-trigger-dark/g) ?? []).length, 3);
+  assert.doesNotMatch(detailHtml, /sm-menu-trigger sm-trigger-light/);
+  assert.match(
+    css,
+    /\.board-case-enterprise \.demo-embed\s*\{[^}]*color:\s*#0b0b0b/s,
+  );
+  assert.match(
+    css,
+    /\.board-case-enterprise \.demo-heading p,[\s\S]*?\.board-case-enterprise \.demo-open-link\s*\{[^}]*color:\s*#0b0b0b/s,
+  );
 });
 
 test("enterprise demo ships as a self-contained local static app", () => {
@@ -778,7 +848,7 @@ test("PillNav renders four animated links and an accessible closed mobile menu",
   assert.match(html, /id="pill-nav-mobile-menu"/);
 });
 
-test("PillNav keeps a navigation landmark without misreporting an anchor as the current page", async () => {
+test("PillNav keeps desktop items hover-only while preserving the mobile active item", async () => {
   const { default: PillNav } = await vite.ssrLoadModule("/src/components/PillNav.jsx");
   const html = renderToStaticMarkup(
     React.createElement(PillNav, {
@@ -789,9 +859,11 @@ test("PillNav keeps a navigation landmark without misreporting an anchor as the 
       ],
     }),
   );
+  const desktopNav = html.match(/<div class="pill-nav-desktop">[\s\S]*?<\/div>/)?.[0] ?? "";
 
   assert.match(html, /^<nav\b[^>]*aria-label="主导航"/);
-  assert.match(html, /class="pill is-active"/);
+  assert.doesNotMatch(desktopNav, /is-active/);
+  assert.match(html, /<a href="\/#work" class="is-active">作品<\/a>/);
   assert.doesNotMatch(html, /aria-current=/);
 });
 
@@ -878,7 +950,8 @@ test("every public route uses the editorial five-link navigation with CV and con
     assert.match(html, /href="\/#process"/);
     assert.match(html, /href="\/#lab"/);
     assert.match(html, /href="\/#contact"/);
-    assert.match(html, /class="pill is-active"/);
+    assert.doesNotMatch(html, /class="pill is-active"/);
+    assert.match(html, /<a href="\/#work" class="is-active">作品<\/a>/);
   }
 });
 
