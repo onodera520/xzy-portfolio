@@ -889,6 +889,46 @@ test("ProfileCard limits tilt to fine hover pointers and cleans up cancelled ges
   assert.match(source, /removeEventListener\("pointercancel", handlePointerLeave\)/);
 });
 
+test("editorial About data contains the complete public profile", async () => {
+  const { aboutProfile } = await import("../src/data/aboutProfile.js");
+
+  assert.equal(aboutProfile.name, "薛梓毅");
+  assert.equal(aboutProfile.englishName, "Ziyi Xue");
+  assert.equal(aboutProfile.education.length, 2);
+  assert.equal(aboutProfile.experience.achievements.length, 5);
+  assert.deepEqual(
+    aboutProfile.contacts.map((item) => item.value),
+    ["18668155572", "2830008192@qq.com", "onodera1006"],
+  );
+});
+
+test("EditorialAbout renders quantified achievements as semantic emphasis", async () => {
+  const { aboutProfile } = await import("../src/data/aboutProfile.js");
+  const { default: EditorialAbout } = await vite.ssrLoadModule(
+    "/src/components/EditorialAbout.jsx",
+  );
+  const html = renderToStaticMarkup(
+    React.createElement(EditorialAbout, { profile: aboutProfile }),
+  );
+
+  for (const value of [
+    "20+ 核心页面",
+    "AI Coding",
+    "50%",
+    "20+ 高频组件",
+    "30%",
+    "95%+",
+  ]) {
+    assert.match(html, new RegExp(`<strong>${value.replaceAll("+", "\\+")}</strong>`));
+  }
+  assert.match(html, /href="tel:18668155572"/);
+  assert.match(html, /href="mailto:2830008192@qq\.com"/);
+  assert.match(html, /<span[^>]*>onodera1006<\/span>/);
+  assert.match(html, /loading="lazy"/);
+  assert.match(html, /width="1024"/);
+  assert.match(html, /height="1536"/);
+});
+
 test("removed color backgrounds and their Three.js dependency do not ship", () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8"),
