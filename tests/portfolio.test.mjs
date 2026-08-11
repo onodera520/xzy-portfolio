@@ -136,7 +136,7 @@ test("home gallery data contains three live cases and one local placeholder", as
     assert.equal(fs.existsSync(filePath), true, `${item.image} should exist`);
   }
 
-  assert.deepEqual(homeSectionIds, ["top", "about", "work", "lab", "contact"]);
+  assert.deepEqual(homeSectionIds, ["top", "about", "work", "process", "lab", "contact"]);
   assert.equal(homeMarqueeRows.length, 2);
   assert.equal(homeMarqueeRows.every((row) => row.trim().length > 0), true);
 });
@@ -164,25 +164,25 @@ test("case footer data excludes the current case and appends the disabled AI pro
   assert.equal(aiProduct.link, undefined);
 
   assert.deepEqual(caseFooterThemes.health, {
-    bgColor: "#ccecff",
-    textColor: "#16324b",
-    marqueeBgColor: "#16324b",
-    marqueeTextColor: "#ccecff",
-    borderColor: "#16324b",
+    bgColor: "#0b0b0b",
+    textColor: "#ffffff",
+    marqueeBgColor: "#f7f6f2",
+    marqueeTextColor: "#0b0b0b",
+    borderColor: "#f7f6f2",
   });
   assert.deepEqual(caseFooterThemes.enterprise, {
-    bgColor: "#07183f",
-    textColor: "#f4f7ff",
-    marqueeBgColor: "#f4f7ff",
-    marqueeTextColor: "#07183f",
-    borderColor: "#f4f7ff",
+    bgColor: "#0b0b0b",
+    textColor: "#ffffff",
+    marqueeBgColor: "#f7f6f2",
+    marqueeTextColor: "#0b0b0b",
+    borderColor: "#f7f6f2",
   });
   assert.deepEqual(caseFooterThemes.campaign, {
-    bgColor: "#4b1514",
-    textColor: "#fff1e8",
-    marqueeBgColor: "#fff1e8",
-    marqueeTextColor: "#4b1514",
-    borderColor: "#fff1e8",
+    bgColor: "#0b0b0b",
+    textColor: "#ffffff",
+    marqueeBgColor: "#f7f6f2",
+    marqueeTextColor: "#0b0b0b",
+    borderColor: "#f7f6f2",
   });
 });
 
@@ -304,8 +304,10 @@ test("home route renders the complete portfolio story", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.match(html, /把复杂问题/);
-  assert.match(html, /设计成清晰体验/);
+  assert.match(html, /DESIGN IN BLOOM/);
+  assert.match(html, /Experience Designer \/ AI Product \/ Vibe Coding/);
+  assert.match(html, /VIEW PROJECTS/);
+  assert.match(html, /XUE&#x27;S LAB/);
   assert.match(html, /ABOUT \/ ME/);
   assert.match(html, /Ziyi Xue/);
   assert.match(html, /求职方向：UI\/UX\/AI体验设计/);
@@ -318,12 +320,17 @@ test("home route renders the complete portfolio story", async () => {
   assert.doesNotMatch(html, /我是一名正在寻找产品设计与用户体验岗位/);
   assert.match(html, /精选作品/);
   assert.match(html, /设计决策实验室/);
-  assert.match(html, /AI 与设计/);
+  assert.match(html, /设计过程与 AI/);
   assert.match(html, /保持联系/);
+  const sectionOrder = ["about", "work", "process", "lab", "contact"].map(
+    (sectionId) => html.indexOf(`id="${sectionId}"`),
+  );
+  assert.equal(sectionOrder.every((position) => position >= 0), true);
+  assert.deepEqual(sectionOrder, [...sectionOrder].sort((a, b) => a - b));
   assert.match(html, /href="#work"/);
   assert.match(html, /href="#lab"/);
   assert.equal((html.match(/data-specular-button="true"/g) ?? []).length, 1);
-  assert.match(html, /<button[^>]*data-specular-button="true"[^>]*>[\s\S]*查看作品[\s\S]*<\/button>/);
+  assert.match(html, /<button[^>]*data-specular-button="true"[^>]*>[\s\S]*VIEW PROJECTS[\s\S]*<\/button>/);
   assert.doesNotMatch(html, /class="button button-light" href="#work"/);
   assert.match(html, /data-faulty-terminal="true"/);
   assert.doesNotMatch(html, /data-hero-unicorn|unicornstudio/i);
@@ -339,19 +346,20 @@ test("home route renders the complete portfolio story", async () => {
   assert.doesNotMatch(html, /class="project-card/);
 });
 
-test("homepage preserves SoftAurora and moves FaultyTerminal into the AI section", async () => {
+test("homepage uses the Design in Bloom swarm and removes the old color backgrounds", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8"),
   );
 
-  assert.equal((html.match(/class="soft-aurora-container"/g) ?? []).length, 1);
-  assert.match(html, /class="hero-aurora"[^>]*aria-hidden="true"/);
+  assert.equal((html.match(/data-bee-swarm="true"/g) ?? []).length, 1);
+  assert.match(html, /\/hero\/design-in-bloom\/flower\.png/);
+  assert.match(html, /\/hero\/design-in-bloom\/bee\.png/);
   assert.equal((html.match(/data-faulty-terminal="true"/g) ?? []).length, 1);
   assert.match(html, /class="ai-terminal-card"[\s\S]*data-faulty-terminal="true"/);
-  assert.doesNotMatch(html, /data-hero-unicorn|unicornstudio/i);
-  assert.equal(packageJson.dependencies["unicornstudio-react"], undefined);
+  assert.doesNotMatch(html, /soft-aurora|home-liquid-background|hero-aurora/i);
+  assert.equal(packageJson.dependencies.three, undefined);
   assert.equal((html.match(/class="accordion-gallery/g) ?? []).length, 1);
 });
 
@@ -372,15 +380,18 @@ test("BlurText does not clip its animated glyphs at the line box", () => {
   assert.doesNotMatch(css, /\.blur-text\s*\{[^}]*overflow:\s*hidden/s);
 });
 
-test("the Morez-inspired hero and AI terminal keep distinct visual layers", async () => {
+test("the flower, swarm and hero copy keep distinct visual layers", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.match(html, /class="hero-aurora"/);
-  assert.match(html, /class="hero-content shell"/);
+  assert.match(html, /class="bee-swarm__trail"/);
+  assert.match(html, /class="bee-swarm__bees"/);
+  assert.match(html, /class="bee-swarm__foreground"/);
+  assert.match(html, /class="bloom-hero-copy"/);
   assert.match(html, /class="ai-terminal-card"/);
   assert.match(html, /data-faulty-terminal="true"/);
-  assert.ok(html.indexOf('class="hero-aurora"') < html.indexOf('class="hero-content shell"'));
+  assert.ok(html.indexOf('class="bee-swarm__trail"') < html.indexOf('class="bee-swarm__bees"'));
+  assert.ok(html.indexOf('class="bee-swarm__bees"') < html.indexOf('class="bee-swarm__foreground"'));
   assert.ok(html.indexOf('class="ai-terminal-card"') < html.indexOf('data-faulty-terminal="true"'));
 });
 
@@ -416,7 +427,7 @@ test("Figma-backed case routes render only complete artboards in source order", 
   assert.equal((consumerHtml.match(/data-figma-node=/g) ?? []).length, 15);
   assert.equal((consumerHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 15);
   assert.equal((consumerHtml.match(/class="line-sidebar__item"/g) ?? []).length, 15);
-  assert.match(consumerHtml, /--accent-color:#006cff/);
+  assert.match(consumerHtml, /--accent-color:#0b0b0b/);
   assert.match(consumerHtml, /id="case-frame-consumer-1"/);
   assert.match(enterpriseHtml, /跨境电商异常中枢平台/);
   assert.match(enterpriseHtml, /可交互 Demo/);
@@ -426,15 +437,15 @@ test("Figma-backed case routes render only complete artboards in source order", 
   assert.equal((enterpriseHtml.match(/data-figma-node=/g) ?? []).length, 14);
   assert.equal((enterpriseHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 14);
   assert.equal((enterpriseHtml.match(/class="line-sidebar__item"/g) ?? []).length, 14);
-  assert.match(enterpriseHtml, /--accent-color:#6ea8ff/);
+  assert.match(enterpriseHtml, /--accent-color:#0b0b0b/);
   assert.match(enterpriseHtml, /id="case-frame-enterprise-14"/);
   assert.match(campaignHtml, /骑福兽，闹新春/);
   assert.equal((campaignHtml.match(/class="portfolio-board"/g) ?? []).length, 5);
   assert.equal((campaignHtml.match(/class="portfolio-board-entry"/g) ?? []).length, 5);
   assert.equal((campaignHtml.match(/class="line-sidebar__item"/g) ?? []).length, 5);
-  assert.match(campaignHtml, /--accent-color:#FF8F96/);
-  assert.match(campaignHtml, /--text-color:#D98286/);
-  assert.match(campaignHtml, /--marker-color:#B86568/);
+  assert.match(campaignHtml, /--accent-color:#0b0b0b/);
+  assert.match(campaignHtml, /--text-color:#66645f/);
+  assert.match(campaignHtml, /--marker-color:#aaa79f/);
   assert.match(campaignHtml, /class="case-chapter-nav is-campaign"/);
   assert.doesNotMatch(campaignHtml, /--accent-color:#006cff/);
   assert.match(campaignHtml, /id="case-frame-campaign-5"/);
@@ -543,18 +554,14 @@ test("every complete artboard has a 16px rounded corner", () => {
   assert.match(css, /\.portfolio-board\s*\{[^}]*border-radius:\s*16px/s);
 });
 
-test("campaign case uses its deep red project background", () => {
-  const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
-  const chapterNavCss = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "LineSidebar.css"),
-    "utf8",
-  );
+test("campaign case keeps its artboards inside the shared editorial chrome", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/work/campaign" }));
 
-  assert.match(css, /\.board-case-campaign\s*\{[^}]*--case-page-bg:\s*#4b1514;[^}]*background:\s*var\(--case-page-bg\)/s);
-  assert.match(
-    chapterNavCss,
-    /\.case-chapter-nav\.is-campaign \.case-chapter-nav__mobile\s*\{[^}]*color:\s*#D98286/s,
-  );
+  assert.match(html, /class="board-case board-case-campaign"/);
+  assert.match(html, /class="case-flowing-menu"/);
+  assert.match(html, /background-color:#0b0b0b/);
+  assert.match(html, /border-color:#f7f6f2/);
 });
 
 test("FlowingMenu renders linked projects and a non-navigating AI placeholder", async () => {
@@ -607,22 +614,22 @@ test("every project route ends with its themed menu of other projects", async ()
       route: "/work/consumer",
       excluded: "AI健康管家一站式服务平台",
       included: ["跨境电商异常中枢平台", "骑福兽，闹新春"],
-      background: "#ccecff",
-      foreground: "#16324b",
+      background: "#0b0b0b",
+      foreground: "#f7f6f2",
     },
     {
       route: "/work/enterprise",
       excluded: "跨境电商异常中枢平台",
       included: ["AI健康管家一站式服务平台", "骑福兽，闹新春"],
-      background: "#07183f",
-      foreground: "#f4f7ff",
+      background: "#0b0b0b",
+      foreground: "#f7f6f2",
     },
     {
       route: "/work/campaign",
       excluded: "骑福兽，闹新春",
       included: ["AI健康管家一站式服务平台", "跨境电商异常中枢平台"],
-      background: "#4b1514",
-      foreground: "#fff1e8",
+      background: "#0b0b0b",
+      foreground: "#f7f6f2",
     },
   ];
 
@@ -815,23 +822,27 @@ test("BorderGlow intro animation exposes cleanup for pending timer work", async 
   assert.deepEqual(calls, [["timeout", 41]]);
 });
 
-test("every public route uses one glowing PillNav while preserving its anchor destinations", async () => {
+test("every public route uses the editorial five-link navigation with CV and contact actions", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.equal((homeHtml.match(/class="border-glow-card is-continuous site-nav-glow"/g) ?? []).length, 1);
+  assert.equal((homeHtml.match(/class="site-nav"/g) ?? []).length, 1);
   assert.equal((homeHtml.match(/class="wordmark"/g) ?? []).length, 1);
-  assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 4);
-  for (const href of ["#work", "#about", "#lab", "#contact"]) {
+  assert.match(homeHtml, /XUE STUDIO/);
+  assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 5);
+  assert.match(homeHtml, />CV<\/a>/);
+  assert.match(homeHtml, /aria-label="联系 XUE STUDIO"/);
+  for (const href of ["#about", "#work", "#process", "#lab", "#contact"]) {
     assert.match(homeHtml, new RegExp(`href="${href}"`));
   }
 
   for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign"]) {
     const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
-    assert.equal((html.match(/class="border-glow-card is-continuous site-nav-glow"/g) ?? []).length, 1, route);
-    assert.equal((html.match(/class="pill(?: is-active)?"/g) ?? []).length, 4, route);
+    assert.equal((html.match(/class="site-nav site-nav-solid"/g) ?? []).length, 1, route);
+    assert.equal((html.match(/class="pill(?: is-active)?"/g) ?? []).length, 5, route);
     assert.match(html, /href="\/#work"/);
     assert.match(html, /href="\/#about"/);
+    assert.match(html, /href="\/#process"/);
     assert.match(html, /href="\/#lab"/);
     assert.match(html, /href="\/#contact"/);
     assert.match(html, /class="pill is-active"/);
@@ -878,79 +889,122 @@ test("ProfileCard limits tilt to fine hover pointers and cleans up cancelled ges
   assert.match(source, /removeEventListener\("pointercancel", handlePointerLeave\)/);
 });
 
-test("LiquidEther exposes the supplied React component", async () => {
-  const { default: LiquidEther } = await vite.ssrLoadModule("/src/components/LiquidEther.jsx");
+test("removed color backgrounds and their Three.js dependency do not ship", () => {
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8"),
+  );
+  const appSource = fs.readFileSync(path.join(process.cwd(), "src", "App.jsx"), "utf8");
 
-  assert.equal(typeof LiquidEther, "function");
-});
-
-test("only the homepage declares one desktop LiquidEther background", async () => {
-  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
-  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
-
-  assert.equal((homeHtml.match(/class="home-liquid-background"/g) ?? []).length, 1);
-  assert.match(homeHtml, /data-resolution="0\.5"/);
-  assert.match(homeHtml, /data-colors="#8db9ef,#c084fc,#75e6da"/);
-
-  for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign", "/missing"]) {
-    const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
-    assert.doesNotMatch(html, /home-liquid-background/, route);
+  assert.equal(packageJson.dependencies.three, undefined);
+  assert.doesNotMatch(appSource, /LiquidEther|HomeLiquidBackground|SoftAurora/);
+  for (const fileName of [
+    "LiquidEther.jsx",
+    "LiquidEther.css",
+    "HomeLiquidBackground.jsx",
+    "SoftAurora.jsx",
+    "SoftAurora.css",
+  ]) {
+    assert.equal(fs.existsSync(path.join(process.cwd(), "src", "components", fileName)), false);
   }
 });
 
-test("LiquidEther stays fixed behind the interactive homepage foreground", () => {
-  const pageCss = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
-  const liquidSource = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "LiquidEther.jsx"),
-    "utf8",
+test("sidebar navigation data exposes grouped site and project shortcuts", async () => {
+  const { sidebarMenuGroups, sidebarStatusText } = await import(
+    "../src/data/sidebarMenu.js"
   );
-  const gateSource = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "HomeLiquidBackground.jsx"),
-    "utf8",
+
+  assert.deepEqual(
+    sidebarMenuGroups.map((group) => `${group.title} / ${group.titleZh}`),
+    [
+      "HOME / 首页",
+      "ABOUT / 关于",
+      "PROJECTS / 作品",
+      "PROCESS / 过程",
+      "LAB / 实验",
+      "CONTACT / 联系",
+    ],
   );
+  assert.deepEqual(
+    sidebarMenuGroups.flatMap((group) => group.children)
+      .filter((item) => item.link)
+      .map((item) => item.link),
+    [
+      "/#top",
+      "/#about",
+      "/#about-details",
+      "/work/consumer",
+      "/work/enterprise",
+      "/work/campaign",
+      "/#process",
+      "/#lab",
+      "/#contact",
+    ],
+  );
+  const aiProduct = sidebarMenuGroups
+    .flatMap((group) => group.children)
+    .find((item) => item.label === "AI 产品探索 · 即将上线");
+  assert.deepEqual(aiProduct, {
+    label: "AI 产品探索 · 即将上线",
+    disabled: true,
+  });
+  assert.equal(sidebarStatusText, "OPEN TO WORK · UI/UX · AI PRODUCT");
+});
+
+test("StaggeredMenu renders grouped links, disabled items and its bee treatment", async () => {
+  const { default: StaggeredMenu } = await vite.ssrLoadModule(
+    "/src/components/StaggeredMenu.jsx",
+  );
+  const html = renderToStaticMarkup(
+    React.createElement(StaggeredMenu, {
+      groups: [
+        {
+          title: "PROJECTS",
+          titleZh: "作品",
+          link: "/#work",
+          ariaLabel: "查看作品项目",
+          children: [
+            { label: "健康管家", link: "/work/consumer" },
+            { label: "AI 产品探索 · 即将上线", disabled: true },
+          ],
+        },
+      ],
+      statusText: "OPEN TO WORK · UI/UX · AI PRODUCT",
+    }),
+  );
+
+  assert.match(html, /class="staggered-menu-root"/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /aria-controls="staggered-menu-panel"/);
+  assert.match(html, /PROJECTS[\s\S]*作品/);
+  assert.match(html, /href="\/work\/consumer"/);
+  assert.match(html, /aria-disabled="true"/);
+  assert.doesNotMatch(html, /href="\/work\/ai-product"/);
+  assert.match(html, /OPEN TO WORK · UI\/UX · AI PRODUCT/);
+  assert.match(html, /src="\/hero\/design-in-bloom\/bee\.png"/);
+  assert.equal((html.match(/class="sm-heading-bee"/g) ?? []).length, 1);
+});
+
+test("every public page exposes the same grouped sidebar menu", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+
+  for (const route of ["/", "/work/consumer", "/work/enterprise", "/work/campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
+
+    assert.equal((html.match(/class="staggered-menu-root/g) ?? []).length, 1, route);
+    assert.equal((html.match(/class="sm-menu-group"/g) ?? []).length, 6, route);
+    assert.match(html, /href="\/work\/consumer"/, route);
+    assert.match(html, /href="\/work\/enterprise"/, route);
+    assert.match(html, /href="\/work\/campaign"/, route);
+    assert.match(html, /aria-disabled="true"/, route);
+    assert.doesNotMatch(html, /href="\/work\/ai-product"/, route);
+  }
+});
+
+test("the fixed sidebar is not trapped by a transformed navigation containing block", () => {
+  const styles = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
 
   assert.match(
-    pageCss,
-    /\.home-liquid-background\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;[^}]*z-index:\s*0;[^}]*pointer-events:\s*none;/s,
+    styles,
+    /\.site-nav:not\(\.site-nav-solid\),\s*\.site-nav-solid\s*\{[^}]*left:\s*max\(calc\(\(100% - 1700px\) \/ 2\),\s*clamp\(22px, 3vw, 58px\)\);[^}]*transform:\s*none;/,
   );
-  assert.match(pageCss, /\.home-page\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;[^}]*background:\s*transparent;/s);
-  assert.match(pageCss, /\.home-page \.about-section,[^}]*background:\s*transparent;/s);
-  assert.match(pageCss, /@media\s*\(max-width:\s*767px\)\s*\{[^}]*\.home-liquid-background\s*\{[^}]*display:\s*none;/s);
-  assert.match(gateSource, /matchMedia\(DESKTOP_QUERY\)/);
-  assert.match(liquidSource, /addEventListener\('mousemove',\s*this\._onMouseMove\)/);
-});
-
-test("desktop homepage sections cannot paint an opaque layer over LiquidEther", () => {
-  const pageCss = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
-  const finalDesktopOverride = pageCss.lastIndexOf("@media (min-width: 768px)");
-  const finalOpaqueHomepageLayer = pageCss.lastIndexOf("background: var(--home-black)");
-
-  assert.ok(
-    finalDesktopOverride > finalOpaqueHomepageLayer,
-    "the desktop transparency override must win the CSS cascade",
-  );
-
-  const desktopCss = pageCss.slice(finalDesktopOverride);
-  for (const selector of [
-    ".home-page",
-    ".home-page .hero",
-    ".home-page .about-section",
-    ".home-page .work-section",
-    ".home-page .lab-section",
-    ".home-page .ai-section",
-    ".home-page .contact-section",
-  ]) {
-    assert.ok(desktopCss.includes(selector), `${selector} must reveal the desktop canvas`);
-  }
-  assert.match(desktopCss, /background:\s*transparent/);
-});
-
-test("the desktop gate defers the Three.js background bundle on mobile", () => {
-  const gateSource = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "HomeLiquidBackground.jsx"),
-    "utf8",
-  );
-
-  assert.match(gateSource, /import\("\.\/LiquidEther\.jsx"\)/);
-  assert.doesNotMatch(gateSource, /^import LiquidEther from/m);
 });

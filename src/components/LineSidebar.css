@@ -144,18 +144,18 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #31506b;
+    color: #5f5d58;
     font-size: 10px;
     letter-spacing: 0.08em;
     writing-mode: vertical-rl;
   }
 
   .case-chapter-nav.is-enterprise .case-chapter-nav__mobile {
-    color: #aab8d6;
+    color: #5f5d58;
   }
 
   .case-chapter-nav.is-campaign .case-chapter-nav__mobile {
-    color: #D98286;
+    color: #5f5d58;
   }
 
   .case-chapter-nav__mobile span {

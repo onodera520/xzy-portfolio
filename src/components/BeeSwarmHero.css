@@ -1,0 +1,72 @@
+.bee-swarm {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bee-swarm__trail,
+.bee-swarm__bees,
+.bee-swarm__foreground {
+  position: absolute;
+  inset: 0;
+}
+
+.bee-swarm__trail {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bee-swarm__bees {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bee-swarm__bee {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(34px, 2.8vw, 52px);
+  height: auto;
+  user-select: none;
+  will-change: transform;
+}
+
+.bee-swarm__foreground {
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.bee-swarm__foreground > *:not(.bee-swarm__flower) {
+  pointer-events: auto;
+}
+
+.bee-swarm__flower {
+  width: clamp(250px, 31vw, 500px);
+  height: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  will-change: transform;
+}
+
+@media (max-width: 767px) {
+  .bee-swarm__bee {
+    width: clamp(27px, 9vw, 39px);
+  }
+
+  .bee-swarm__flower {
+    width: min(74vw, 340px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bee-swarm__bee,
+  .bee-swarm__flower {
+    will-change: auto;
+  }
+}

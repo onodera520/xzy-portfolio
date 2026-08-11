@@ -1,6 +1,6 @@
 import { portfolioCases } from "./portfolioCases.js";
 
-export const homeSectionIds = ["top", "about", "work", "lab", "contact"];
+export const homeSectionIds = ["top", "about", "work", "process", "lab", "contact"];
 
 export const homeMarqueeRows = [
   "UI/UX · RESEARCH · PRODUCT THINKING · ",
@@ -170,25 +170,25 @@ export const projectGalleryItems = [
 
 export const caseFooterThemes = {
   health: {
-    bgColor: "#ccecff",
-    textColor: "#16324b",
-    marqueeBgColor: "#16324b",
-    marqueeTextColor: "#ccecff",
-    borderColor: "#16324b",
+    bgColor: "#0b0b0b",
+    textColor: "#ffffff",
+    marqueeBgColor: "#f7f6f2",
+    marqueeTextColor: "#0b0b0b",
+    borderColor: "#f7f6f2",
   },
   enterprise: {
-    bgColor: "#07183f",
-    textColor: "#f4f7ff",
-    marqueeBgColor: "#f4f7ff",
-    marqueeTextColor: "#07183f",
-    borderColor: "#f4f7ff",
+    bgColor: "#0b0b0b",
+    textColor: "#ffffff",
+    marqueeBgColor: "#f7f6f2",
+    marqueeTextColor: "#0b0b0b",
+    borderColor: "#f7f6f2",
   },
   campaign: {
-    bgColor: "#4b1514",
-    textColor: "#fff1e8",
-    marqueeBgColor: "#fff1e8",
-    marqueeTextColor: "#4b1514",
-    borderColor: "#fff1e8",
+    bgColor: "#0b0b0b",
+    textColor: "#ffffff",
+    marqueeBgColor: "#f7f6f2",
+    marqueeTextColor: "#0b0b0b",
+    borderColor: "#f7f6f2",
   },
 };
 

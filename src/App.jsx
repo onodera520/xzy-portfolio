@@ -6,15 +6,17 @@ import { InteractionLab } from "./components/InteractionLab.jsx";
 import AccordionGallery from "./components/AccordionGallery.jsx";
 import { FigmaCaseStudy } from "./components/FigmaCaseStudy.jsx";
 import { CaseOtherLink } from "./components/CaseOtherLink.jsx";
+import BeeSwarmHero from "./components/BeeSwarmHero.jsx";
 import BlurText from "./components/BlurText.jsx";
 import FadeContent from "./components/FadeContent.jsx";
-import SoftAurora from "./components/SoftAurora.jsx";
 import SpecularButton from "./components/SpecularButton.jsx";
-import BorderGlow from "./components/BorderGlow.jsx";
 import PillNav from "./components/PillNav.jsx";
 import ProfileCard from "./components/ProfileCard.jsx";
-import { HomeLiquidBackground } from "./components/HomeLiquidBackground.jsx";
+import StaggeredMenu from "./components/StaggeredMenu.jsx";
 import { getProject, homeSectionIds, projectGalleryItems } from "./data/projects.js";
+import { sidebarMenuGroups, sidebarStatusText } from "./data/sidebarMenu.js";
+
+const SIDEBAR_LAYER_COLORS = ["#0B0B0B", "#454541", "#C8C6BF"];
 
 export function scrollToSection(
   sectionId,
@@ -83,38 +85,35 @@ export function scheduleHomeHashScroll({
 function Navigation({ homeLinks = false, inverted = false }) {
   const anchor = homeLinks ? "#" : "/#";
   const items = [
-    { label: "作品", href: `${anchor}work` },
-    { label: "关于", href: `${anchor}about` },
-    { label: "互动实验", href: `${anchor}lab` },
-    { label: "联系", href: `${anchor}contact` },
+    { label: "ABOUT", href: `${anchor}about` },
+    { label: "PROJECTS", href: `${anchor}work` },
+    { label: "PROCESS", href: `${anchor}process` },
+    { label: "LAB", href: `${anchor}lab` },
+    { label: "CONTACT", href: `${anchor}contact` },
   ];
 
   return (
     <header className={`site-nav${inverted ? " site-nav-solid" : ""}`}>
-      <BorderGlow
-        as="div"
-        className="site-nav-glow"
-        edgeSensitivity={28}
-        glowColor="210 90 74"
-        backgroundColor="#050505"
-        borderRadius={22}
-        glowRadius={28}
-        glowIntensity={0.78}
-        coneSpread={24}
-        fillOpacity={0.2}
-        animated
-        continuous
-        colors={["#8db9ef", "#c084fc", "#75e6da"]}
-      >
-        <div className="nav-inner shell">
-          <a className="wordmark" href="/" aria-label="XZY 作品集首页">XZY</a>
-          <PillNav
-            items={items}
-            activeHref={homeLinks ? undefined : `${anchor}work`}
-            frameless
+      <div className="nav-inner shell">
+        <div className="nav-brand">
+          <StaggeredMenu
+            colors={SIDEBAR_LAYER_COLORS}
+            groups={sidebarMenuGroups}
+            panelColor="#F7F6F2"
+            statusText={sidebarStatusText}
+            triggerTone={inverted ? "light" : "dark"}
           />
+          <a className="wordmark" href="/" aria-label="XUE STUDIO 作品集首页">XUE STUDIO</a>
         </div>
-      </BorderGlow>
+        <PillNav
+          items={items}
+          activeHref={homeLinks ? undefined : `${anchor}work`}
+        />
+        <div className="nav-actions">
+          <a href={`${anchor}contact`} aria-label="查看简历信息">CV</a>
+          <a href={`${anchor}contact`} aria-label="联系 XUE STUDIO" className="nav-mail">✉</a>
+        </div>
+      </div>
     </header>
   );
 }
@@ -135,73 +134,64 @@ function HomePage() {
 
   return (
     <>
-      <HomeLiquidBackground />
       <Navigation homeLinks />
       <main className="home-page">
         <section className="hero" id="top">
           <div className="hero-stage shell">
-            <div className="hero-aurora" aria-hidden="true">
-              <SoftAurora
-                speed={0.13}
-                scale={1.55}
-                brightness={0.86}
-                color1="#83adff"
-                color2="#f5cc82"
-                noiseFrequency={1.72}
-                noiseAmplitude={0.58}
-                bandHeight={0.64}
-                bandSpread={0.92}
-                octaveDecay={0.14}
-                layerOffset={0.18}
-                colorSpeed={0.24}
-                enableMouseInteraction={false}
-              />
-            </div>
-            <span className="hero-orbit hero-orbit-one" aria-hidden="true">✦</span>
-            <span className="hero-orbit hero-orbit-two" aria-hidden="true">✳</span>
-            <div className="hero-content shell">
-              <FadeContent className="home-reveal" duration={1.1} delay={0.1}>
-                <p className="hero-role">UI/UX DESIGNER · RESEARCHER</p>
-              </FadeContent>
+            <BeeSwarmHero
+              flowerSrc="/hero/design-in-bloom/flower.png"
+              beeSrc="/hero/design-in-bloom/bee.png"
+              count={10}
+              mobileCount={6}
+              idleSpread={[190, 330]}
+              pointerSpread={[65, 105]}
+              speed={2.5}
+              trailLength={32}
+              magnetRadius={240}
+              magnetStrengthX={24}
+              magnetStrengthY={18}
+              trackingBoundarySelector=".bloom-hero-copy h1"
+            >
+              <div className="bloom-hero-copy">
               <BlurText
                 as="h1"
-                text={"把复杂问题，\n设计成清晰体验。"}
-                delay={48}
+                text="DESIGN IN BLOOM"
+                delay={42}
                 stepDuration={0.58}
                 threshold={0}
                 rootMargin="0px"
               />
+              <FadeContent className="home-reveal" duration={1.05} delay={0.12}>
+                <p className="hero-role">Experience Designer / AI Product / Vibe Coding</p>
+              </FadeContent>
               <FadeContent className="home-reveal hero-cta-reveal" duration={1.1} delay={0.26}>
                 <div className="hero-cta">
                   <SpecularButton
-                    size="lg"
-                    radius={18}
-                    tint="#ffffff"
-                    tintOpacity={0.08}
-                    blur={10}
+                    size="md"
+                    radius={999}
+                    tint="#111111"
+                    tintOpacity={1}
+                    blur={7}
                     textColor="#ffffff"
                     lineColor="#ffffff"
-                    baseColor="#525252"
-                    intensity={1.2}
-                    shineSize={10}
-                    shineFade={40}
+                    baseColor="#111111"
+                    intensity={0.92}
+                    shineSize={8}
+                    shineFade={44}
                     thickness={1}
-                    speed={0.28}
+                    speed={0.24}
                     followMouse
                     proximity={280}
                     autoAnimate
                     onClick={() => scrollToSection("work")}
                   >
-                    查看作品
+                    VIEW PROJECTS
                   </SpecularButton>
                 </div>
               </FadeContent>
-              <FadeContent className="home-reveal" duration={1.1} delay={0.32}>
-                <div className="hero-bottom">
-                  <p>关注用户研究、产品逻辑与可落地的体验表达。</p>
-                </div>
-              </FadeContent>
-            </div>
+              </div>
+              <a className="hero-lab-link" href="#lab">XUE&apos;S LAB <span aria-hidden="true">→</span></a>
+            </BeeSwarmHero>
           </div>
         </section>
 
@@ -223,7 +213,7 @@ function HomePage() {
               <FadeContent className="home-reveal" duration={1.05} delay={0.12}>
                 <div className="about-copy">
                   <p>我从研究和业务语境出发，把复杂流程整理成清晰、可理解、可执行的体验。</p>
-                  <dl>
+                  <dl id="about-details">
                     <div><dt>关注方向</dt><dd>产品设计、UX 设计</dd></div>
                     <div><dt>工作方式</dt><dd>研究、定义、原型、验证</dd></div>
                     <div><dt>当前状态</dt><dd>开放求职机会</dd></div>
@@ -260,26 +250,11 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="lab-section section" id="lab">
-          <div className="lab-stage shell">
-            <div className="lab-heading">
-              <div className="section-index">INTERACTION / DECISION LAB</div>
-              <div className="lab-heading-row">
-                <BlurText as="h2" text="设计决策实验室" delay={58} />
-                <FadeContent className="home-reveal" duration={1} delay={0.08}>
-                  <p>好的设计不是选择最好看的方案，而是在不同价值与约束之间做出清楚判断。</p>
-                </FadeContent>
-              </div>
-            </div>
-            <InteractionLab />
-          </div>
-        </section>
-
-        <section className="ai-section section">
+        <section className="ai-section section" id="process">
           <div className="shell">
-            <div className="section-index">AI × DESIGN</div>
+            <div className="section-index">PROCESS / AI × DESIGN</div>
             <div className="ai-heading-row">
-              <BlurText as="h2" text="AI 与设计" delay={66} />
+              <BlurText as="h2" text="设计过程与 AI" delay={66} />
               <p>不是替代判断，而是扩展问题空间。</p>
             </div>
             <div className="ai-layout">
@@ -301,6 +276,21 @@ function HomePage() {
           </div>
         </section>
 
+        <section className="lab-section section" id="lab">
+          <div className="lab-stage shell">
+            <div className="lab-heading">
+              <div className="section-index">LAB / INTERACTION</div>
+              <div className="lab-heading-row">
+                <BlurText as="h2" text="设计决策实验室" delay={58} />
+                <FadeContent className="home-reveal" duration={1} delay={0.08}>
+                  <p>好的设计不是选择最好看的方案，而是在不同价值与约束之间做出清楚判断。</p>
+                </FadeContent>
+              </div>
+            </div>
+            <InteractionLab />
+          </div>
+        </section>
+
         <section className="contact-section section" id="contact">
           <div className="shell contact-inner">
             <p>LET&apos;S TALK / OPEN TO WORK</p>
@@ -310,7 +300,7 @@ function HomePage() {
             </div>
             <FadeContent className="home-reveal" duration={1} delay={0.1}>
               <div className="contact-bottom">
-                <span>邮箱与简历链接将在下一版补充</span>
+                <span>XUE STUDIO · UI/UX · AI PRODUCT</span>
                 <a className="button button-dark" href="#top">返回顶部 <span aria-hidden="true">↑</span></a>
               </div>
             </FadeContent>
@@ -319,8 +309,8 @@ function HomePage() {
       </main>
       <footer className="footer">
         <div className="shell footer-inner">
-          <strong>XZY</strong>
-          <span>UI/UX PORTFOLIO · 2026</span>
+          <strong>XUE STUDIO</strong>
+          <span>DESIGN IN BLOOM · 2026</span>
         </div>
       </footer>
     </>

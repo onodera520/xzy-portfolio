@@ -6,19 +6,19 @@ const MOBILE_QUERY = "(max-width: 767px)";
 const HIDE_DELAY = 500;
 const CHAPTER_NAV_PALETTES = {
   consumer: {
-    accentColor: "#006cff",
-    textColor: "#31506b",
-    markerColor: "#6b91ac",
+    accentColor: "#0b0b0b",
+    textColor: "#66645f",
+    markerColor: "#aaa79f",
   },
   enterprise: {
-    accentColor: "#6ea8ff",
-    textColor: "#aab8d6",
-    markerColor: "#50658c",
+    accentColor: "#0b0b0b",
+    textColor: "#66645f",
+    markerColor: "#aaa79f",
   },
   campaign: {
-    accentColor: "#FF8F96",
-    textColor: "#D98286",
-    markerColor: "#B86568",
+    accentColor: "#0b0b0b",
+    textColor: "#66645f",
+    markerColor: "#aaa79f",
   },
 };
 
