@@ -16,7 +16,7 @@
 
 .scroll-velocity-row + .scroll-velocity-row {
   border-top: 1px solid rgba(5, 5, 5, 0.15);
-  background: linear-gradient(90deg, #f0cfbf, #d8d2f4 48%, #cfedc3);
+  background: var(--bloom-paper, #f7f6f2);
   color: #050505;
 }
 

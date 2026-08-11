@@ -1,5 +1,7 @@
 export function calculateAccordionLayout({
   width,
+  paddingLeft = 0,
+  paddingRight = 0,
   height,
   count,
   gap,
@@ -9,7 +11,8 @@ export function calculateAccordionLayout({
 }) {
   const panelCount = Math.max(1, Math.floor(count));
   const safeGap = Math.max(0, gap);
-  const usableWidth = Math.max(0, width - (safeGap * (panelCount - 1)));
+  const contentWidth = Math.max(0, width - paddingLeft - paddingRight);
+  const usableWidth = Math.max(0, contentWidth - (safeGap * (panelCount - 1)));
   const equalWidth = usableWidth / panelCount;
   const hasActive = Number.isInteger(activeIndex) && activeIndex >= 0 && activeIndex < panelCount;
 

@@ -4,6 +4,10 @@ import { gsap } from "gsap";
 import "./StaggeredMenu.css";
 
 const DEFAULT_COLORS = ["#0B0B0B", "#454541", "#C8C6BF"];
+const prefersReducedMotion = () => (
+  typeof window !== "undefined"
+  && (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false)
+);
 
 export default function StaggeredMenu({
   position = "left",
@@ -15,7 +19,9 @@ export default function StaggeredMenu({
   closeOnClickAway = true,
   onMenuOpen,
   onMenuClose,
+  motionProfile,
 }) {
+  const appleMotion = motionProfile === "apple";
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
   const rootRef = useRef(null);
@@ -51,33 +57,35 @@ export default function StaggeredMenu({
   const animateTrigger = useCallback((opening) => {
     const [first, middle, last] = lineRefs.current;
     if (!first || !middle || !last) return;
+    const reducedMotion = prefersReducedMotion();
 
     iconTweenRef.current?.kill();
     iconTweenRef.current = gsap.timeline({ defaults: { overwrite: "auto" } })
       .to(first, {
         y: opening ? 10 : 0,
         rotate: opening ? 45 : 0,
-        duration: opening ? 0.55 : 0.32,
-        ease: opening ? "power4.out" : "power3.inOut",
+        duration: reducedMotion ? 0 : appleMotion ? (opening ? 0.24 : 0.16) : (opening ? 0.55 : 0.32),
+        ease: appleMotion ? "power3.out" : (opening ? "power4.out" : "power3.inOut"),
       }, 0)
       .to(middle, {
         opacity: opening ? 0 : 1,
         scaleX: opening ? 0.3 : 1,
-        duration: 0.26,
+        duration: reducedMotion ? 0 : appleMotion ? 0.16 : 0.26,
         ease: "power2.out",
       }, 0)
       .to(last, {
         y: opening ? -10 : 0,
         rotate: opening ? -45 : 0,
-        duration: opening ? 0.55 : 0.32,
-        ease: opening ? "power4.out" : "power3.inOut",
+        duration: reducedMotion ? 0 : appleMotion ? (opening ? 0.24 : 0.16) : (opening ? 0.55 : 0.32),
+        ease: appleMotion ? "power3.out" : (opening ? "power4.out" : "power3.inOut"),
       }, 0);
-  }, []);
+  }, [appleMotion]);
 
   const playOpen = useCallback(() => {
     const panel = panelRef.current;
     const layers = preLayerElsRef.current;
     if (!panel) return;
+    const reducedMotion = prefersReducedMotion();
 
     timelineRef.current?.kill();
     closeTweenRef.current?.kill();
@@ -93,16 +101,16 @@ export default function StaggeredMenu({
       timeline.fromTo(
         layer,
         { xPercent: offscreen },
-        { xPercent: 0, duration: 0.5, ease: "power4.out" },
-        index * 0.07,
+        { xPercent: 0, duration: reducedMotion ? 0 : appleMotion ? 0.22 : 0.5, ease: appleMotion ? "power3.out" : "power4.out" },
+        index * (appleMotion ? 0.04 : 0.07),
       );
     });
 
-    const panelStart = Math.max(0.08, layers.length * 0.07);
+    const panelStart = Math.max(appleMotion ? 0.04 : 0.08, layers.length * (appleMotion ? 0.04 : 0.07));
     timeline.fromTo(
       panel,
       { xPercent: offscreen },
-      { xPercent: 0, duration: 0.65, ease: "power4.out" },
+      { xPercent: 0, duration: reducedMotion ? 0 : appleMotion ? 0.26 : 0.65, ease: appleMotion ? "power3.out" : "power4.out" },
       panelStart,
     );
     timeline.to(
@@ -110,16 +118,16 @@ export default function StaggeredMenu({
       {
         y: 0,
         opacity: 1,
-        duration: 0.72,
-        ease: "power4.out",
-        stagger: { each: 0.08, from: "start" },
+        duration: reducedMotion ? 0 : appleMotion ? 0.24 : 0.72,
+        ease: appleMotion ? "power3.out" : "power4.out",
+        stagger: { each: appleMotion ? 0.04 : 0.08, from: "start" },
       },
       panelStart + 0.12,
     );
     if (status) {
       timeline.to(
         status,
-        { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" },
+        { y: 0, opacity: 1, duration: reducedMotion ? 0 : appleMotion ? 0.2 : 0.45, ease: "power3.out" },
         panelStart + 0.42,
       );
     }
@@ -129,25 +137,26 @@ export default function StaggeredMenu({
 
     timelineRef.current = timeline;
     timeline.play(0);
-  }, [position]);
+  }, [appleMotion, position]);
 
   const playClose = useCallback((restoreFocus = true) => {
     const panel = panelRef.current;
     if (!panel) return;
+    const reducedMotion = prefersReducedMotion();
 
     timelineRef.current?.kill();
     closeTweenRef.current?.kill();
     const offscreen = position === "left" ? -100 : 100;
     closeTweenRef.current = gsap.to([...preLayerElsRef.current, panel], {
       xPercent: offscreen,
-      duration: 0.34,
-      ease: "power3.in",
+      duration: reducedMotion ? 0 : appleMotion ? 0.18 : 0.34,
+      ease: appleMotion ? "power3.out" : "power3.in",
       overwrite: "auto",
       onComplete: () => {
         if (restoreFocus) triggerRef.current?.focus({ preventScroll: true });
       },
     });
-  }, [position]);
+  }, [appleMotion, position]);
 
   const closeMenu = useCallback((restoreFocus = true) => {
     if (!openRef.current) return;
@@ -198,6 +207,7 @@ export default function StaggeredMenu({
     <div
       ref={rootRef}
       className="staggered-menu-root"
+      data-motion-profile={appleMotion ? "apple" : undefined}
       data-position={position}
       data-open={open || undefined}
     >

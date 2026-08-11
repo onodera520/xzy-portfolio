@@ -52,6 +52,23 @@ test("idle panels remain equal while reserving a responsive 16:9 gallery height"
   assert.deepEqual(layout.panelWidths, [229.5, 229.5, 229.5, 229.5]);
 });
 
+test("gallery panel widths fit the content box after horizontal padding", () => {
+  const layout = calculateAccordionLayout({
+    width: 1700,
+    paddingLeft: 10,
+    paddingRight: 10,
+    height: 520,
+    count: 4,
+    gap: 14,
+    activeIndex: null,
+  });
+
+  assert.equal(
+    layout.panelWidths.reduce((sum, panelWidth) => sum + panelWidth, 0) + (14 * 3),
+    1680,
+  );
+});
+
 test("only an insufficient compressed panel hides its label", () => {
   assert.equal(shouldShowAccordionLabel({ hasActive: false, isActive: false, panelWidth: 80, contentWidth: 180 }), true);
   assert.equal(shouldShowAccordionLabel({ hasActive: true, isActive: true, panelWidth: 80, contentWidth: 180 }), true);

@@ -363,7 +363,7 @@ test("homepage uses the Design in Bloom swarm and removes the old color backgrou
   assert.equal((html.match(/class="accordion-gallery/g) ?? []).length, 1);
 });
 
-test("home headings use a semantic one-time blur reveal", async () => {
+test("home headings use a semantic one-time character reveal", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
@@ -371,6 +371,27 @@ test("home headings use a semantic one-time blur reveal", async () => {
   assert.match(html, /<h1[^>]*data-blur-text="true"/);
   assert.equal((html.match(/<h2[^>]*data-blur-text="true"/g) ?? []).length, 4);
   assert.match(html, /class="fade-content home-reveal"/);
+});
+
+test("homepage keeps Apple pill motion while restoring the original sidebar rhythm", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+  const caseHtml = renderToStaticMarkup(
+    React.createElement(App, { initialPath: "/work/consumer" }),
+  );
+
+  assert.equal((homeHtml.match(/data-motion-profile="apple"/g) ?? []).length, 1);
+  assert.ok((homeHtml.match(/data-enter-reveal="true"/g) ?? []).length >= 10);
+  assert.doesNotMatch(caseHtml, /data-motion-profile="apple"/);
+});
+
+test("homepage continuous effects pause responsibly and the gallery restores its original motion", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.equal((html.match(/data-continuous-motion="managed"/g) ?? []).length, 2);
+  assert.match(html, /class="accordion-gallery[^\"]*"[^>]*data-layout-animation="flex"/);
+  assert.match(html, /data-animation-duration="0\.6"/);
 });
 
 test("BlurText does not clip its animated glyphs at the line box", () => {
@@ -672,6 +693,10 @@ test("AccordionGallery starts with four equal, inactive project panels", async (
 
 test("project accordion keeps responsive space on both sides", () => {
   const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+  const accordionCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "AccordionGallery.css"),
+    "utf8",
+  );
 
   assert.match(
     css,
@@ -680,6 +705,14 @@ test("project accordion keeps responsive space on both sides", () => {
   assert.match(
     css,
     /@media\s*\(max-width:\s*520px\)[\s\S]*\.project-gallery-shell\s*\{[^}]*width:\s*calc\(100%\s*-\s*32px\)/,
+  );
+  assert.match(
+    css,
+    /\.home-page \.accordion-gallery\s*\{[^}]*overflow:\s*clip/s,
+  );
+  assert.match(
+    accordionCss,
+    /\.ag-panel__status\s*\{[^}]*color:\s*rgb\(255 255 255 \/ 82%\)/s,
   );
 });
 
@@ -874,11 +907,23 @@ test("editorial About keeps its desktop split and mobile portrait-first layout",
   assert.match(css, /filter:\s*grayscale\(1\)/);
   assert.match(
     css,
+    /\.editorial-about__info\s*\{[^}]*padding-bottom:\s*clamp\(32px,\s*3vw,\s*52px\)/s,
+  );
+  assert.match(
+    css,
     /\.editorial-about__portrait-stage\s*\{[^}]*--portrait-headroom:\s*clamp\(120px,\s*11vw,\s*190px\)[^}]*align-items:\s*flex-end/s,
   );
   assert.match(
     css,
     /\.editorial-about__portrait-image\s*\{[^}]*width:\s*auto[^}]*height:\s*calc\(100%\s*-\s*var\(--portrait-headroom\)\)[^}]*object-fit:\s*contain[^}]*object-position:\s*center bottom/s,
+  );
+  assert.match(
+    css,
+    /\.editorial-about__portrait-stage\s*\{[^}]*position:\s*relative/s,
+  );
+  assert.match(
+    css,
+    /\.editorial-about__portrait-image\s*\{[^}]*position:\s*absolute[^}]*bottom:\s*0[^}]*left:\s*50%[^}]*transform:\s*translateX\(-50%\)/s,
   );
   assert.match(
     css,

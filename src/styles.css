@@ -11,6 +11,8 @@
   --radius: 24px;
   --shell: 1700px;
   --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 * {
@@ -216,7 +218,7 @@ h3 {
   font-size: 14px;
   font-weight: 650;
   white-space: nowrap;
-  transition: transform 180ms ease, background 180ms ease;
+  transition: transform 180ms var(--motion-ease-out), background 180ms var(--motion-ease-out);
 }
 
 .button:hover {
@@ -281,10 +283,15 @@ h3 {
 
 .blur-text__char {
   display: inline-block;
-  will-change: transform, filter, opacity;
+  will-change: transform, opacity;
 }
 
 .home-reveal {
+  width: 100%;
+}
+
+.home-reveal-block,
+.footer-reveal {
   width: 100%;
 }
 
@@ -2193,11 +2200,13 @@ a.demo-open-link:focus-visible {
 
 .home-page .button span {
   font-size: 1.25em;
-  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 180ms var(--motion-ease-out);
 }
 
-.home-page .button:hover span {
-  transform: translate(3px, 3px);
+@media (hover: hover) and (pointer: fine) {
+  .home-page .button:hover span {
+    transform: translate(3px, 3px);
+  }
 }
 
 .hero-orbit {
@@ -2293,6 +2302,7 @@ a.demo-open-link:focus-visible {
 }
 
 .home-page .accordion-gallery {
+  overflow: clip;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 32px;
@@ -2304,12 +2314,17 @@ a.demo-open-link:focus-visible {
 }
 
 .home-page .ag-panel__media img {
-  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 600ms ease;
+  transition: transform 240ms var(--motion-ease-out);
 }
 
-.home-page .ag-panel:hover .ag-panel__media img,
 .home-page .ag-panel:focus-visible .ag-panel__media img {
   transform: scale(1.025);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home-page .ag-panel:hover .ag-panel__media img {
+    transform: scale(1.025);
+  }
 }
 
 .home-page .lab-section {
@@ -2421,6 +2436,10 @@ a.demo-open-link:focus-visible {
 }
 
 .home-page .ai-layout > .home-reveal {
+  height: 100%;
+}
+
+.home-page .ai-layout > .home-reveal > .ai-terminal-card {
   height: 100%;
 }
 
@@ -2866,14 +2885,21 @@ body {
   font-size: 12px;
   font-weight: 850;
   box-shadow: 0 8px 30px rgb(15 13 10 / 4%);
-  transition: color 200ms ease, background 200ms ease, transform 200ms ease;
+  transition: color 180ms var(--motion-ease-out), background 180ms var(--motion-ease-out), transform 180ms var(--motion-ease-out);
 }
 
-.nav-actions a:hover,
 .nav-actions a:focus-visible {
   background: var(--bloom-ink);
   color: #fff;
   transform: translateY(-2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-actions a:hover {
+    background: var(--bloom-ink);
+    color: #fff;
+    transform: translateY(-2px);
+  }
 }
 
 .nav-mail {
@@ -2983,12 +3009,17 @@ body {
   display: inline-block;
   margin-left: 8px;
   font-size: 22px;
-  transition: transform 200ms ease;
+  transition: transform 180ms var(--motion-ease-out);
 }
 
-.hero-lab-link:hover span,
 .hero-lab-link:focus-visible span {
   transform: translateX(6px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-lab-link:hover span {
+    transform: translateX(6px);
+  }
 }
 
 .home-marquee {

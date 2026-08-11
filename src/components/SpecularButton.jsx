@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
 import "./SpecularButton.css";
+import { useMotionActivity } from "./useMotionActivity.js";
 
 const PAD = 20;
 
@@ -87,6 +88,7 @@ const SpecularButton = ({
   const buttonRef = useRef(null);
   const effectRef = useRef(null);
   const propsRef = useRef({});
+  const { activeRef, subscribe } = useMotionActivity(buttonRef, { enabled: !disabled });
 
   propsRef.current = {
     radius,
@@ -172,6 +174,7 @@ const SpecularButton = ({
     let pointerAngle = null;
     let proximityAmount = 0;
     const handlePointerMove = (event) => {
+      if (!activeRef.current) return;
       const rect = button.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
@@ -201,15 +204,12 @@ const SpecularButton = ({
     let animationFrame = 0;
     const line = new Color();
     const base = new Color();
-    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-    const update = (now) => {
-      animationFrame = requestAnimationFrame(update);
+    const renderFrame = (now) => {
       const delta = Math.min((now - lastFrame) / 1000, 0.05);
       lastFrame = now;
       const current = propsRef.current;
 
-      idleAngle += current.speed * delta * (reducedMotion ? 0.25 : 1);
+      idleAngle += current.speed * delta;
       const shouldSteer = current.followMouse
         && pointerAngle !== null
         && (!current.autoAnimate || proximityAmount > 0);
@@ -235,16 +235,36 @@ const SpecularButton = ({
       program.uniforms.uThickness.value = current.thickness * dpr;
       renderer.render({ scene: mesh });
     };
-    animationFrame = requestAnimationFrame(update);
+
+    const scheduleFrame = () => {
+      if (!activeRef.current || animationFrame) return;
+      animationFrame = requestAnimationFrame(update);
+    };
+
+    const update = (now) => {
+      animationFrame = 0;
+      renderFrame(now);
+      scheduleFrame();
+    };
+    renderFrame(performance.now());
+    const unsubscribe = subscribe((active) => {
+      if (active) {
+        scheduleFrame();
+      } else if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+      }
+    });
 
     return () => {
+      unsubscribe();
       cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
       window.removeEventListener("pointermove", handlePointerMove);
       if (gl.canvas.parentNode === effect) effect.removeChild(gl.canvas);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, []);
+  }, [activeRef, subscribe]);
 
   return (
     <button
@@ -253,6 +273,7 @@ const SpecularButton = ({
       disabled={disabled}
       onClick={onClick}
       data-specular-button="true"
+      data-continuous-motion="managed"
       className={`specular-button specular-button--${size}${className ? ` ${className}` : ""}`}
       style={{
         "--sb-radius": `${radius}px`,

@@ -1,15 +1,16 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
+import { getEntranceMotion } from "../lib/motionActivity.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function FadeContent({
   children,
-  blur = true,
-  duration = 1,
+  duration,
   ease = "power2.out",
   delay = 0,
+  hero = false,
   threshold = 0.14,
   initialOpacity = 0,
   className = "",
@@ -22,20 +23,20 @@ export default function FadeContent({
     const element = ref.current;
     if (!element) return undefined;
     const startPct = (1 - threshold) * 100;
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const motion = getEntranceMotion({ hero, reducedMotion });
 
     gsap.set(element, {
       autoAlpha: initialOpacity,
-      filter: blur ? "blur(8px)" : "blur(0px)",
-      y: 16,
-      willChange: "opacity, filter, transform",
+      y: motion.y,
+      willChange: "opacity, transform",
     });
 
     const tween = gsap.to(element, {
       autoAlpha: 1,
-      filter: "blur(0px)",
       y: 0,
-      duration,
-      delay,
+      duration: duration ?? motion.duration,
+      delay: reducedMotion ? 0 : delay,
       ease,
       paused: true,
       onComplete: () => gsap.set(element, { clearProps: "willChange" }),
@@ -53,10 +54,16 @@ export default function FadeContent({
       tween.kill();
       gsap.killTweensOf(element);
     };
-  }, [blur, delay, duration, ease, initialOpacity, threshold]);
+  }, [delay, duration, ease, hero, initialOpacity, threshold]);
 
   return (
-    <div ref={ref} className={`fade-content ${className}`.trim()} style={style} {...props}>
+    <div
+      ref={ref}
+      className={`fade-content ${className}`.trim()}
+      data-enter-reveal="true"
+      style={style}
+      {...props}
+    >
       {children}
     </div>
   );

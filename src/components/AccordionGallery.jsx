@@ -47,10 +47,15 @@ export default function AccordionGallery({
     const ratio = Math.min(Math.max(expandRatio, 0.2), 0.9);
     const grow = count > 1 ? (ratio * (count - 1)) / (1 - ratio) : 1;
     const rect = element.getBoundingClientRect();
+    const styles = window.getComputedStyle(element);
+    const paddingLeft = Number.parseFloat(styles.paddingLeft) || 0;
+    const paddingRight = Number.parseFloat(styles.paddingRight) || 0;
     const horizontalLayout = vertical
       ? null
       : calculateAccordionLayout({
-          width: rect.width,
+          width: element.clientWidth,
+          paddingLeft,
+          paddingRight,
           height,
           count,
           gap,
@@ -61,7 +66,8 @@ export default function AccordionGallery({
       ? horizontalLayout.activeWidth
       : Math.max(140, verticalUsableSize * ratio * 1.22);
     const galleryHeight = vertical ? Math.round(height * 1.08) : horizontalLayout.galleryHeight;
-    const animationDuration = animate ? duration : 0;
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const animationDuration = animate && !reducedMotion ? duration : 0;
 
     if (Math.abs(rect.height - galleryHeight) > 0.5) {
       element.style.height = `${galleryHeight}px`;
@@ -137,7 +143,7 @@ export default function AccordionGallery({
         timeline.to(
           label,
           {
-            opacity: showLabel ? (!hasActive || isActive ? 1 : 0.48) : 0,
+            opacity: showLabel ? (!hasActive || isActive ? 1 : 0.86) : 0,
             x: 0,
             y: showLabel ? 0 : 10,
             duration: animationDuration,
@@ -207,6 +213,8 @@ export default function AccordionGallery({
       }}
       role="list"
       aria-label="作品案例"
+      data-layout-animation="flex"
+      data-animation-duration={duration}
       onMouseLeave={() => setActive(null)}
     >
       {items.map((item, index) => {
@@ -221,7 +229,9 @@ export default function AccordionGallery({
             href={item.link || undefined}
             type={item.link ? undefined : "button"}
             onClick={(event) => handleClick(index, event, Boolean(item.link))}
-            onMouseEnter={() => { if (trigger === "hover") setActive(index); }}
+            onPointerEnter={(event) => {
+              if (trigger === "hover" && event.pointerType !== "touch") setActive(index);
+            }}
             onFocus={() => setActive(index)}
             onKeyDown={(event) => handleKeyDown(index, event)}
             role="listitem"

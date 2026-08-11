@@ -1,10 +1,11 @@
 import { gsap } from "gsap";
 import { useEffect, useMemo, useRef } from "react";
+import { getEntranceMotion } from "../lib/motionActivity.js";
 
 export default function BlurText({
   text = "",
   as: Tag = "p",
-  delay = 70,
+  delay = 32,
   className = "",
   direction = "bottom",
   threshold = 0.12,
@@ -12,19 +13,17 @@ export default function BlurText({
   animationFrom,
   animationTo,
   easing = "power3.out",
-  stepDuration = 0.5,
+  stepDuration,
 }) {
   const characters = useMemo(() => [...text], [text]);
   const ref = useRef(null);
 
   const defaultFrom = useMemo(() => ({
-    filter: "blur(10px)",
     opacity: 0,
-    y: direction === "top" ? -24 : 24,
+    y: direction === "top" ? -14 : 14,
   }), [direction]);
 
   const defaultTo = useMemo(() => ({
-    filter: "blur(0px)",
     opacity: 1,
     y: 0,
   }), []);
@@ -38,8 +37,10 @@ export default function BlurText({
     if (!ref.current) return undefined;
     const element = ref.current;
     const characterElements = element.querySelectorAll(".blur-text__char");
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const motion = getEntranceMotion({ hero: Tag === "h1", reducedMotion });
     const context = gsap.context(() => {
-      gsap.set(characterElements, fromSnapshot);
+      gsap.set(characterElements, reducedMotion ? { opacity: 0, y: 0 } : fromSnapshot);
     }, element);
     let tween;
 
@@ -47,10 +48,10 @@ export default function BlurText({
       if (tween) return;
       tween = gsap.to(characterElements, {
         ...toSnapshot,
-        duration: stepDuration * 2,
-        stagger: delay / 1000,
+        duration: stepDuration ?? motion.duration,
+        stagger: reducedMotion ? 0 : Math.min(delay / 1000, motion.stagger),
         ease: easing,
-        clearProps: "filter,opacity,transform,willChange",
+        clearProps: "opacity,transform,willChange",
       });
     };
 
@@ -84,6 +85,7 @@ export default function BlurText({
       ref={ref}
       className={`blur-text ${className}`.trim()}
       data-blur-text="true"
+      data-enter-reveal="true"
       aria-label={text.replace(/\n/g, " ")}
     >
       {characters.map((character, index) => {

@@ -83,7 +83,7 @@ export function scheduleHomeHashScroll({
   };
 }
 
-function Navigation({ homeLinks = false, inverted = false }) {
+function Navigation({ homeLinks = false, inverted = false, motionProfile }) {
   const anchor = homeLinks ? "#" : "/#";
   const items = [
     { label: "ABOUT", href: `${anchor}about` },
@@ -109,6 +109,7 @@ function Navigation({ homeLinks = false, inverted = false }) {
         <PillNav
           items={items}
           activeHref={homeLinks ? undefined : `${anchor}work`}
+          motionProfile={motionProfile}
         />
         <div className="nav-actions">
           <a href={`${anchor}contact`} aria-label="查看简历信息">CV</a>
@@ -135,7 +136,7 @@ function HomePage() {
 
   return (
     <>
-      <Navigation homeLinks />
+      <Navigation homeLinks motionProfile="apple" />
       <main className="home-page">
         <section className="hero" id="top">
           <div className="hero-stage shell">
@@ -157,15 +158,13 @@ function HomePage() {
               <BlurText
                 as="h1"
                 text="DESIGN IN BLOOM"
-                delay={42}
-                stepDuration={0.58}
                 threshold={0}
                 rootMargin="0px"
               />
-              <FadeContent className="home-reveal" duration={1.05} delay={0.12}>
+              <FadeContent className="home-reveal" delay={0.08} hero>
                 <p className="hero-role">Experience Designer / AI Product / Vibe Coding</p>
               </FadeContent>
-              <FadeContent className="home-reveal hero-cta-reveal" duration={1.1} delay={0.26}>
+              <FadeContent className="home-reveal hero-cta-reveal" delay={0.16} hero>
                 <div className="hero-cta">
                   <SpecularButton
                     size="md"
@@ -200,7 +199,7 @@ function HomePage() {
 
         <section className="about-section section" id="about">
           <div className="shell">
-            <FadeContent className="home-reveal" duration={1.05} delay={0.04}>
+            <FadeContent className="home-reveal" delay={0.04}>
               <EditorialAbout profile={aboutProfile} />
             </FadeContent>
           </div>
@@ -211,21 +210,24 @@ function HomePage() {
             <div className="section-heading">
               <div className="section-index">SELECTED WORK / 2026</div>
               <div className="section-heading-row">
-                <BlurText as="h2" text="精选作品" delay={72} />
-                <FadeContent className="home-reveal" duration={1} delay={0.08}>
+                <BlurText as="h2" text="精选作品" />
+                <FadeContent className="home-reveal" delay={0.05}>
                   <p>四个方向展示用户体验、复杂系统、运营创意与 AI 产品思考。</p>
                 </FadeContent>
               </div>
             </div>
-            <AccordionGallery
-              items={projectGalleryItems}
-              expandRatio={0.52}
-              height={520}
-              gap={14}
-              radius={24}
-              tilt={6}
-              trigger="hover"
-            />
+            <FadeContent className="home-reveal home-reveal-block" delay={0.06}>
+              <AccordionGallery
+                items={projectGalleryItems}
+                duration={0.6}
+                expandRatio={0.52}
+                height={520}
+                gap={14}
+                radius={24}
+                tilt={6}
+                trigger="hover"
+              />
+            </FadeContent>
           </div>
         </section>
 
@@ -233,15 +235,17 @@ function HomePage() {
           <div className="shell">
             <div className="section-index">PROCESS / AI × DESIGN</div>
             <div className="ai-heading-row">
-              <BlurText as="h2" text="设计过程与 AI" delay={66} />
+              <BlurText as="h2" text="设计过程与 AI" />
               <p>不是替代判断，而是扩展问题空间。</p>
             </div>
             <div className="ai-layout">
-              <div className="ai-terminal-card">
-                <AITerminal />
-                <span>QUESTION / EXPLORE / VERIFY</span>
-              </div>
-              <FadeContent className="home-reveal" duration={1.05} delay={0.1}>
+              <FadeContent className="home-reveal" delay={0.04}>
+                <div className="ai-terminal-card">
+                  <AITerminal />
+                  <span>QUESTION / EXPLORE / VERIFY</span>
+                </div>
+              </FadeContent>
+              <FadeContent className="home-reveal" delay={0.09}>
                 <div className="ai-copy">
                   <p>我把 AI 看作放大提问、探索与验证的工具，而不是替代设计判断的答案。</p>
                   <ul>
@@ -260,13 +264,15 @@ function HomePage() {
             <div className="lab-heading">
               <div className="section-index">LAB / INTERACTION</div>
               <div className="lab-heading-row">
-                <BlurText as="h2" text="设计决策实验室" delay={58} />
-                <FadeContent className="home-reveal" duration={1} delay={0.08}>
+                <BlurText as="h2" text="设计决策实验室" />
+                <FadeContent className="home-reveal" delay={0.05}>
                   <p>好的设计不是选择最好看的方案，而是在不同价值与约束之间做出清楚判断。</p>
                 </FadeContent>
               </div>
             </div>
-            <InteractionLab />
+            <FadeContent className="home-reveal home-reveal-block" delay={0.06}>
+              <InteractionLab />
+            </FadeContent>
           </div>
         </section>
 
@@ -274,10 +280,10 @@ function HomePage() {
           <div className="shell contact-inner">
             <p>LET&apos;S TALK / OPEN TO WORK</p>
             <div className="contact-heading-row">
-              <BlurText as="h2" text={"保持联系，\n一起把问题想清楚。"} delay={48} />
+              <BlurText as="h2" text={"保持联系，\n一起把问题想清楚。"} />
               <span className="contact-mark" aria-hidden="true">↗</span>
             </div>
-            <FadeContent className="home-reveal" duration={1} delay={0.1}>
+            <FadeContent className="home-reveal" delay={0.06}>
               <div className="contact-bottom">
                 <span>XUE STUDIO · UI/UX · AI PRODUCT</span>
                 <a className="button button-dark" href="#top">返回顶部 <span aria-hidden="true">↑</span></a>
@@ -287,10 +293,12 @@ function HomePage() {
         </section>
       </main>
       <footer className="footer">
-        <div className="shell footer-inner">
-          <strong>XUE STUDIO</strong>
-          <span>DESIGN IN BLOOM · 2026</span>
-        </div>
+        <FadeContent className="home-reveal footer-reveal" delay={0.04}>
+          <div className="shell footer-inner">
+            <strong>XUE STUDIO</strong>
+            <span>DESIGN IN BLOOM · 2026</span>
+          </div>
+        </FadeContent>
       </footer>
     </>
   );

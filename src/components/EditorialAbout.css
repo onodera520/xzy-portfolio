@@ -14,6 +14,7 @@
   grid-area: info;
   min-width: 0;
   padding: clamp(28px, 4.5vw, 76px);
+  padding-bottom: clamp(32px, 3vw, 52px);
 }
 
 .editorial-about__header {
@@ -210,6 +211,7 @@
 
 .editorial-about__portrait-stage {
   --portrait-headroom: clamp(120px, 11vw, 190px);
+  position: relative;
   min-height: 0;
   display: flex;
   align-items: flex-end;
@@ -218,12 +220,16 @@
 }
 
 .editorial-about__portrait-image {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
   width: auto;
   height: calc(100% - var(--portrait-headroom));
   max-height: none;
   max-width: none;
   object-fit: contain;
   object-position: center bottom;
+  transform: translateX(-50%);
   filter: grayscale(1) contrast(1.04);
 }
 

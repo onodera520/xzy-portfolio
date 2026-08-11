@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
 import "./PillNav.css";
+import { getPillLayoutSize } from "../lib/pillGeometry.js";
 
 const MOBILE_MENU_ID = "pill-nav-mobile-menu";
 
@@ -12,7 +13,9 @@ export default function PillNav({
   className = "",
   initialLoadAnimation = true,
   frameless = false,
+  motionProfile,
 }) {
+  const appleMotion = motionProfile === "apple";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const circleRefs = useRef([]);
   const timelineRefs = useRef([]);
@@ -26,12 +29,13 @@ export default function PillNav({
 
     const layout = () => {
       if (cancelled) return;
+      const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
       circleRefs.current.forEach((circle, index) => {
         if (!circle?.parentElement) return;
 
         const pill = circle.parentElement;
-        const { width, height } = pill.getBoundingClientRect();
+        const { width, height } = getPillLayoutSize(pill);
         if (!width || !height) return;
 
         const radius = (((width * width) / 4) + (height * height)) / (2 * height);
@@ -47,15 +51,29 @@ export default function PillNav({
 
         const label = pill.querySelector(".pill-label");
         const hoverLabel = pill.querySelector(".pill-label-hover");
-        gsap.set(circle, { xPercent: -50, scale: 0, transformOrigin: `50% ${originY}px` });
+        gsap.set(circle, {
+          xPercent: -50,
+          yPercent: appleMotion ? 38 : 0,
+          scale: appleMotion ? 0.95 : 0,
+          opacity: appleMotion ? 0 : 1,
+          transformOrigin: `50% ${originY}px`,
+        });
         gsap.set(label, { y: 0 });
         gsap.set(hoverLabel, { y: Math.ceil(height + 32), opacity: 0 });
 
         timelineRefs.current[index]?.kill();
         timelineRefs.current[index] = gsap.timeline({ paused: true })
-          .to(circle, { scale: 1.2, xPercent: -50, duration: 1, ease, overwrite: "auto" }, 0)
-          .to(label, { y: -(height + 8), duration: 1, ease, overwrite: "auto" }, 0)
-          .to(hoverLabel, { y: 0, opacity: 1, duration: 1, ease, overwrite: "auto" }, 0);
+          .to(circle, {
+            scale: appleMotion ? 1.05 : 1.2,
+            xPercent: -50,
+            yPercent: 0,
+            opacity: 1,
+            duration: reducedMotion ? 0 : (appleMotion ? 0.22 : 1),
+            ease,
+            overwrite: "auto",
+          }, 0)
+          .to(label, { y: -(height + 8), duration: reducedMotion ? 0 : (appleMotion ? 0.22 : 1), ease, overwrite: "auto" }, 0)
+          .to(hoverLabel, { y: 0, opacity: 1, duration: reducedMotion ? 0 : (appleMotion ? 0.22 : 1), ease, overwrite: "auto" }, 0);
       });
     };
 
@@ -63,12 +81,15 @@ export default function PillNav({
     window.addEventListener("resize", layout);
     document.fonts?.ready.then(layout).catch(() => undefined);
 
-    if (initialLoadAnimation && desktopRef.current) {
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    if (initialLoadAnimation && desktopRef.current && !reducedMotion) {
       gsap.fromTo(
         desktopRef.current,
         { opacity: 0, y: -10, scaleX: 0.86, transformOrigin: "right center" },
-        { opacity: 1, y: 0, scaleX: 1, duration: 0.65, ease },
+        { opacity: 1, y: 0, scaleX: 1, duration: appleMotion ? 0.4 : 0.65, ease },
       );
+    } else if (desktopRef.current) {
+      gsap.set(desktopRef.current, { opacity: 1, y: 0, scaleX: 1 });
     }
 
     return () => {
@@ -78,7 +99,7 @@ export default function PillNav({
       activeTweenRefs.current.forEach((tween) => tween?.kill());
       gsap.killTweensOf([desktopRef.current, toggleRef.current, mobileMenuRef.current]);
     };
-  }, [ease, initialLoadAnimation, items]);
+  }, [appleMotion, ease, initialLoadAnimation, items]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
@@ -100,12 +121,13 @@ export default function PillNav({
     if (!menu || !toggle) return undefined;
 
     const lines = toggle.querySelectorAll(".pill-nav-toggle-line");
-    gsap.to(lines[0], { rotation: isMobileMenuOpen ? 45 : 0, y: isMobileMenuOpen ? 3 : 0, duration: 0.28, ease });
-    gsap.to(lines[1], { rotation: isMobileMenuOpen ? -45 : 0, y: isMobileMenuOpen ? -3 : 0, duration: 0.28, ease });
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    gsap.to(lines[0], { rotation: isMobileMenuOpen ? 45 : 0, y: isMobileMenuOpen ? 3 : 0, duration: reducedMotion ? 0 : 0.2, ease });
+    gsap.to(lines[1], { rotation: isMobileMenuOpen ? -45 : 0, y: isMobileMenuOpen ? -3 : 0, duration: reducedMotion ? 0 : 0.2, ease });
     gsap.to(menu, {
       autoAlpha: isMobileMenuOpen ? 1 : 0,
       y: isMobileMenuOpen ? 0 : 10,
-      duration: isMobileMenuOpen ? 0.3 : 0.2,
+      duration: reducedMotion ? 0.18 : (isMobileMenuOpen ? 0.24 : 0.16),
       ease,
       pointerEvents: isMobileMenuOpen ? "auto" : "none",
     });
@@ -116,12 +138,14 @@ export default function PillNav({
     };
   }, [ease, isMobileMenuOpen]);
 
-  const playTo = (index, end) => {
+  const playTo = (index, end, immediate = false) => {
     const timeline = timelineRefs.current[index];
     if (!timeline) return;
     activeTweenRefs.current[index]?.kill();
     activeTweenRefs.current[index] = timeline.tweenTo(end ? timeline.duration() : 0, {
-      duration: end ? 0.32 : 0.22,
+      duration: immediate || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+        ? 0
+        : appleMotion ? (end ? 0.22 : 0.16) : (end ? 0.32 : 0.22),
       ease,
       overwrite: "auto",
     });
@@ -131,6 +155,7 @@ export default function PillNav({
     <nav
       className={`pill-nav${frameless ? " pill-nav--frameless" : ""}${className ? ` ${className}` : ""}`}
       aria-label="主导航"
+      data-motion-profile={appleMotion ? "apple" : undefined}
     >
       <div className="pill-nav-desktop" ref={desktopRef}>
         <ul className="pill-list">
@@ -140,10 +165,14 @@ export default function PillNav({
                 href={item.href}
                 className={`pill${activeHref === item.href ? " is-active" : ""}`}
                 aria-label={item.ariaLabel ?? item.label}
-                onMouseEnter={() => playTo(index, true)}
-                onMouseLeave={() => playTo(index, false)}
-                onFocus={() => playTo(index, true)}
-                onBlur={() => playTo(index, false)}
+                onPointerEnter={(event) => {
+                  if (event.pointerType !== "touch") playTo(index, true);
+                }}
+                onPointerLeave={(event) => {
+                  if (event.pointerType !== "touch") playTo(index, false);
+                }}
+                onFocus={() => playTo(index, true, true)}
+                onBlur={() => playTo(index, false, true)}
               >
                 <span
                   className="pill-hover-circle"

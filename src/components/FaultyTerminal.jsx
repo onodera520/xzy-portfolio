@@ -2,6 +2,7 @@ import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import "./FaultyTerminal.css";
+import { useMotionActivity } from "./useMotionActivity.js";
 
 const vertexShader = `
 attribute vec2 position;
@@ -217,6 +218,7 @@ export default function FaultyTerminal({
   const rafRef = useRef(0);
   const loadAnimationStartRef = useRef(0);
   const timeOffsetRef = useRef(Math.random() * 100);
+  const { activeRef, subscribe } = useMotionActivity(containerRef, { enabled: !pause });
   const tintVec = useMemo(() => hexToRgb(tint), [tint]);
   const ditherValue = useMemo(
     () => (typeof dither === "boolean" ? (dither ? 1 : 0) : dither),
@@ -281,8 +283,7 @@ export default function FaultyTerminal({
     resizeObserver.observe(container);
     resize();
 
-    function update(timestamp) {
-      rafRef.current = requestAnimationFrame(update);
+    const renderFrame = (timestamp) => {
       if (pageLoadAnimation && loadAnimationStartRef.current === 0) {
         loadAnimationStartRef.current = timestamp;
       }
@@ -294,7 +295,9 @@ export default function FaultyTerminal({
         program.uniforms.iTime.value = frozenTimeRef.current;
       }
       if (pageLoadAnimation && loadAnimationStartRef.current > 0) {
-        const progress = Math.min((timestamp - loadAnimationStartRef.current) / 2000, 1);
+        const progress = activeRef.current
+          ? Math.min((timestamp - loadAnimationStartRef.current) / 2000, 1)
+          : 1;
         program.uniforms.uPageLoadProgress.value = progress;
       }
       if (mouseReact) {
@@ -306,14 +309,35 @@ export default function FaultyTerminal({
         program.uniforms.uMouse.value[1] = smoothMouse.y;
       }
       renderer.render({ scene: mesh });
+    };
+
+    const scheduleFrame = () => {
+      if (!activeRef.current || rafRef.current) return;
+      rafRef.current = requestAnimationFrame(update);
+    };
+
+    function update(timestamp) {
+      rafRef.current = 0;
+      renderFrame(timestamp);
+      scheduleFrame();
     }
 
-    rafRef.current = requestAnimationFrame(update);
     container.appendChild(gl.canvas);
     if (mouseReact) container.addEventListener("mousemove", handleMouseMove);
+    renderFrame(performance.now());
+    const unsubscribe = subscribe((active) => {
+      if (active) {
+        scheduleFrame();
+      } else if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+    });
 
     return () => {
+      unsubscribe();
       cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
       resizeObserver.disconnect();
       if (mouseReact) container.removeEventListener("mousemove", handleMouseMove);
       if (gl.canvas.parentElement === container) container.removeChild(gl.canvas);
@@ -321,12 +345,13 @@ export default function FaultyTerminal({
       loadAnimationStartRef.current = 0;
       timeOffsetRef.current = Math.random() * 100;
     };
-  }, [brightness, chromaticAberration, curvature, digitSize, ditherValue, dpr, flickerAmount, glitchAmount, gridMul, handleMouseMove, mouseReact, mouseStrength, noiseAmp, pageLoadAnimation, pause, scale, scanlineIntensity, timeScale, tintVec]);
+  }, [activeRef, brightness, chromaticAberration, curvature, digitSize, ditherValue, dpr, flickerAmount, glitchAmount, gridMul, handleMouseMove, mouseReact, mouseStrength, noiseAmp, pageLoadAnimation, pause, scale, scanlineIntensity, subscribe, timeScale, tintVec]);
 
   return (
     <div
       ref={containerRef}
       className={`faulty-terminal-container ${className}`.trim()}
+      data-continuous-motion="managed"
       style={style}
       {...rest}
     />
