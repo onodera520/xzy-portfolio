@@ -211,20 +211,20 @@
 .editorial-about__portrait-stage {
   min-height: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
   overflow: hidden;
+  box-sizing: border-box;
+  padding-top: clamp(28px, 3vw, 52px);
 }
 
 .editorial-about__portrait-image {
-  width: 100%;
-  height: calc(100% + 48px);
+  width: 88%;
+  height: 100%;
   max-height: none;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  object-position: center bottom;
   filter: grayscale(1) contrast(1.04);
-  transform: translateY(-48px);
-  transform-origin: center top;
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -269,11 +269,6 @@
     min-height: clamp(380px, 108vw, 560px);
     border-bottom: 1px solid rgba(17, 17, 17, 0.1);
     border-left: 0;
-  }
-
-  .editorial-about__portrait-image {
-    height: calc(100% + 24px);
-    transform: translateY(-24px);
   }
 
   .editorial-about__info {
