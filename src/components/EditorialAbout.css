@@ -217,13 +217,13 @@
 }
 
 .editorial-about__portrait-image {
-  width: min(96%, 720px);
-  height: auto;
+  width: 100%;
+  height: calc(100% + 48px);
   max-height: none;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center top;
   filter: grayscale(1) contrast(1.04);
-  transform: translateY(-48px) scale(1.04);
+  transform: translateY(-48px);
   transform-origin: center top;
 }
 
@@ -273,8 +273,8 @@
   }
 
   .editorial-about__portrait-image {
-    width: min(92%, 470px);
-    transform: translateY(-24px) scale(1.03);
+    height: calc(100% + 24px);
+    transform: translateY(-24px);
   }
 
   .editorial-about__info {
