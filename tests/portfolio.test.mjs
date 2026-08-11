@@ -874,11 +874,11 @@ test("editorial About keeps its desktop split and mobile portrait-first layout",
   assert.match(css, /filter:\s*grayscale\(1\)/);
   assert.match(
     css,
-    /\.editorial-about__portrait-stage\s*\{[^}]*padding-top:\s*clamp\(28px,\s*3vw,\s*52px\)/s,
+    /\.editorial-about__portrait-stage\s*\{[^}]*--portrait-headroom:\s*clamp\(120px,\s*11vw,\s*190px\)[^}]*align-items:\s*flex-end/s,
   );
   assert.match(
     css,
-    /\.editorial-about__portrait-image\s*\{[^}]*width:\s*88%[^}]*height:\s*100%[^}]*object-fit:\s*contain[^}]*object-position:\s*center bottom/s,
+    /\.editorial-about__portrait-image\s*\{[^}]*width:\s*auto[^}]*height:\s*calc\(100%\s*-\s*var\(--portrait-headroom\)\)[^}]*object-fit:\s*contain[^}]*object-position:\s*center bottom/s,
   );
   assert.match(
     css,

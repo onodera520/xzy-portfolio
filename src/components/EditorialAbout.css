@@ -209,19 +209,19 @@
 }
 
 .editorial-about__portrait-stage {
+  --portrait-headroom: clamp(120px, 11vw, 190px);
   min-height: 0;
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   justify-content: center;
   overflow: hidden;
-  box-sizing: border-box;
-  padding-top: clamp(28px, 3vw, 52px);
 }
 
 .editorial-about__portrait-image {
-  width: 88%;
-  height: 100%;
+  width: auto;
+  height: calc(100% - var(--portrait-headroom));
   max-height: none;
+  max-width: none;
   object-fit: contain;
   object-position: center bottom;
   filter: grayscale(1) contrast(1.04);
@@ -249,6 +249,10 @@
     border-left: 0;
   }
 
+  .editorial-about__portrait-stage {
+    --portrait-headroom: clamp(64px, 8vw, 96px);
+  }
+
   .editorial-about__contacts {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
@@ -269,6 +273,10 @@
     min-height: clamp(380px, 108vw, 560px);
     border-bottom: 1px solid rgba(17, 17, 17, 0.1);
     border-left: 0;
+  }
+
+  .editorial-about__portrait-stage {
+    --portrait-headroom: 28px;
   }
 
   .editorial-about__info {
