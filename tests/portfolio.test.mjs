@@ -918,6 +918,13 @@ test("EditorialAbout renders quantified achievements as semantic emphasis", asyn
   assert.match(html, /width="1024"/);
   assert.match(html, /height="1536"/);
   assert.match(html, /id="about-details"/);
+  const portraitIndex = html.indexOf('class="editorial-about__portrait"');
+  const contactsIndex = html.indexOf('class="editorial-about__contacts"');
+  const portraitImageIndex = html.indexOf('class="editorial-about__portrait-image"');
+  assert.ok(
+    portraitIndex < contactsIndex && contactsIndex < portraitImageIndex,
+    "contacts should sit above the portrait image inside the portrait column",
+  );
 });
 
 test("removed color backgrounds and their Three.js dependency do not ship", () => {

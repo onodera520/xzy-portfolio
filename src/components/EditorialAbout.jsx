@@ -64,6 +64,9 @@ export default function EditorialAbout({ profile }) {
           <p><RichText parts={profile.strength.parts} /></p>
         </section>
 
+      </div>
+
+      <div className="editorial-about__portrait">
         <address className="editorial-about__contacts">
           {profile.contacts.map((item) => (
             <div key={item.label}>
@@ -76,17 +79,17 @@ export default function EditorialAbout({ profile }) {
             </div>
           ))}
         </address>
-      </div>
-
-      <div className="editorial-about__portrait">
-        <img
-          src={profile.portrait.src}
-          alt={profile.portrait.alt}
-          width={profile.portrait.width}
-          height={profile.portrait.height}
-          loading="lazy"
-          decoding="async"
-        />
+        <div className="editorial-about__portrait-stage">
+          <img
+            className="editorial-about__portrait-image"
+            src={profile.portrait.src}
+            alt={profile.portrait.alt}
+            width={profile.portrait.width}
+            height={profile.portrait.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
       </div>
     </article>
   );
