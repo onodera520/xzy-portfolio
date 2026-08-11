@@ -229,7 +229,10 @@
 
 @media (min-width: 768px) and (max-width: 1024px) {
   .editorial-about {
-    grid-template-columns: minmax(0, 58fr) minmax(300px, 42fr);
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "portrait"
+      "info";
   }
 
   .editorial-about__info {
@@ -240,20 +243,16 @@
     font-size: clamp(56px, 7.5vw, 76px);
   }
 
-  .editorial-about__education li,
-  .editorial-about__job {
-    grid-template-columns: 1fr;
-    gap: 3px;
-  }
-
   .editorial-about__portrait {
-    min-height: 820px;
+    min-height: clamp(620px, 78vw, 760px);
+    border-bottom: 1px solid rgba(17, 17, 17, 0.1);
+    border-left: 0;
   }
 
   .editorial-about__contacts {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 26px 24px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    padding: 28px 32px;
   }
 }
 

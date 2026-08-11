@@ -880,6 +880,10 @@ test("editorial About keeps its desktop split and mobile portrait-first layout",
     css,
     /@media\s*\(max-width:\s*767px\)[\s\S]*grid-template-areas:\s*"portrait"\s*"info"/,
   );
+  assert.match(
+    css,
+    /@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1024px\)\s*\{\s*\.editorial-about\s*\{[^}]*grid-template-columns:\s*1fr[^}]*grid-template-areas:\s*"portrait"\s*"info"/,
+  );
   assert.match(css, /overflow-wrap:\s*anywhere/);
 });
 
