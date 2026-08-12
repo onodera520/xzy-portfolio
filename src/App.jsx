@@ -6,6 +6,7 @@ import { FigmaCaseStudy } from "./components/FigmaCaseStudy.jsx";
 import { CaseOtherLink } from "./components/CaseOtherLink.jsx";
 import BeeSwarmHero from "./components/BeeSwarmHero.jsx";
 import BloomPhysicsExperience from "./components/BloomPhysicsExperience.jsx";
+import OpeningBloom from "./components/OpeningBloom.jsx";
 import BlurText from "./components/BlurText.jsx";
 import FadeContent from "./components/FadeContent.jsx";
 import SpecularButton from "./components/SpecularButton.jsx";
@@ -133,13 +134,17 @@ function MediaPlaceholder({ label, className = "" }) {
   );
 }
 
-function HomePage() {
+function HomePage({ previousDocumentPath = null }) {
   useEffect(() => {
     return scheduleHomeHashScroll();
   }, []);
 
   return (
     <>
+      <OpeningBloom
+        flowerSrc="/hero/design-in-bloom/flower-sprite.png"
+        previousDocumentPath={previousDocumentPath}
+      />
       <Navigation homeLinks />
       <main className="home-page" data-brand-region="true" data-brand-contrast="light">
         <BloomPhysicsExperience
@@ -346,7 +351,7 @@ function NotFoundPage() {
   );
 }
 
-export default function App({ initialPath }) {
+export default function App({ initialPath, previousDocumentPath = null }) {
   const path = initialPath ?? (typeof window === "undefined" ? "/" : window.location.pathname);
   const match = path.match(/^\/work\/([^/]+)\/?$/);
   let page;
@@ -359,7 +364,7 @@ export default function App({ initialPath }) {
         ? <FigmaCaseStudy Navigation={Navigation} project={project} />
         : <CasePage project={project} />;
   } else {
-    page = path === "/" ? <HomePage /> : <NotFoundPage />;
+    page = path === "/" ? <HomePage previousDocumentPath={previousDocumentPath} /> : <NotFoundPage />;
   }
 
   return (

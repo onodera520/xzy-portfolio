@@ -409,6 +409,17 @@ test("home route renders the complete portfolio story", async () => {
   assert.doesNotMatch(html, /class="project-card/);
 });
 
+test("home route mounts one opening bloom without replacing the hero", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.equal((html.match(/data-opening-bloom="true"/g) ?? []).length, 1);
+  assert.match(html, /aria-label="点击花朵进入 XUE STUDIO"/);
+  assert.match(html, /data-bee-swarm="true"/);
+  assert.match(html, /data-bloom-physics="true"/);
+  assert.match(html, /DESIGN IN BLOOM/);
+});
+
 test("homepage removes the interaction lab without changing the remaining section order", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const { sidebarMenuGroups } = await import("../src/data/sidebarMenu.js");
