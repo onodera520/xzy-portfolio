@@ -46,7 +46,7 @@
 }
 
 .bee-swarm__flower {
-  width: clamp(250px, 31vw, 500px);
+  width: clamp(220px, 27vw, 425px);
   height: auto;
   display: block;
   user-select: none;
@@ -60,7 +60,7 @@
   }
 
   .bee-swarm__flower {
-    width: min(74vw, 340px);
+    width: min(67vw, 305px);
   }
 }
 

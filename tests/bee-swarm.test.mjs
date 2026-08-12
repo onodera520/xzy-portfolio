@@ -86,6 +86,77 @@ test("flower magnet peaks halfway through its radius and releases at the boundar
   assert.deepEqual(getFlowerMagnetTarget({ x: 620, y: 300 }, center, { ...options, active: false }), { x: 0, y: 0 });
 });
 
+test("React Bits flower magnet uses 120px padding and strength 3", async () => {
+  const { getReactBitsMagnetTarget } = await import("../src/lib/beeSwarm.js");
+  const center = { x: 500, y: 300 };
+  const options = {
+    active: true,
+    width: 300,
+    height: 360,
+    padding: 120,
+    magnetStrength: 3,
+  };
+
+  assert.deepEqual(
+    getReactBitsMagnetTarget({ x: 620, y: 360 }, center, options),
+    { x: 40, y: 20 },
+  );
+  assert.deepEqual(
+    getReactBitsMagnetTarget({ x: 800, y: 300 }, center, options),
+    { x: 0, y: 0 },
+  );
+  assert.deepEqual(
+    getReactBitsMagnetTarget({ x: 620, y: 360 }, center, { ...options, active: false }),
+    { x: 0, y: 0 },
+  );
+});
+
+test("flower spring preserves live velocity and softly overshoots when returning home", async () => {
+  const { stepFlowerSpring } = await import("../src/lib/beeSwarm.js");
+  const frame = 1 / 60;
+  let state = { x: 0, y: 0, vx: 0, vy: 0 };
+
+  for (let index = 0; index < 18; index += 1) {
+    state = stepFlowerSpring(state, { x: 28, y: 18 }, {
+      stiffness: 58,
+      damping: 13,
+      dt: frame,
+    });
+  }
+
+  assert.ok(state.x > 0);
+  const releasePosition = state.x;
+  state = stepFlowerSpring(state, { x: 0, y: 0 }, {
+    stiffness: 58,
+    damping: 8.8,
+    dt: frame,
+  });
+  assert.ok(state.x > 0 && state.x !== releasePosition, "release continues from the live position");
+
+  let crossedOrigin = false;
+  let settledFrame = null;
+  for (let index = 0; index < 120; index += 1) {
+    state = stepFlowerSpring(state, { x: 0, y: 0 }, {
+      stiffness: 88,
+      damping: 13,
+      dt: frame,
+    });
+    crossedOrigin ||= state.x < 0;
+    if (
+      settledFrame === null
+      && Math.abs(state.x) < 0.02
+      && Math.abs(state.vx) < 0.02
+    ) {
+      settledFrame = index;
+    }
+  }
+
+  assert.equal(crossedOrigin, true, "return should include one restrained spring overshoot");
+  assert.ok(settledFrame !== null && settledFrame < 100, "faster return should settle promptly");
+  assert.ok(Math.abs(state.x) < 0.02);
+  assert.ok(Math.abs(state.vx) < 0.02);
+});
+
 test("pointer tracking stops as soon as the pointer reaches the Design in Bloom boundary", async () => {
   const { isPointerInTrackingZone } = await import("../src/lib/beeSwarm.js");
   const zone = { left: 0, top: 0, right: 1200, bottom: 620 };
@@ -129,9 +200,10 @@ test("the hero renders its resilient flower and bee layers without hiding native
         beeSrc: "/hero/design-in-bloom/bee.png",
         speed: 2.5,
         pointerSpread: [65, 105],
-        magnetRadius: 240,
-        magnetStrengthX: 24,
-        magnetStrengthY: 18,
+        magnetPadding: 120,
+        magnetStrength: 3,
+        magnetReturnStiffness: 88,
+        magnetReturnDamping: 13,
         trackingBoundarySelector: ".bloom-hero-copy h1",
       },
       React.createElement("h1", null, "DESIGN IN BLOOM"),
@@ -142,7 +214,9 @@ test("the hero renders its resilient flower and bee layers without hiding native
   assert.match(html, /data-desktop-count="10"/);
   assert.match(html, /data-mobile-count="6"/);
   assert.match(html, /data-speed="2\.5"/);
-  assert.match(html, /data-magnet-radius="240"/);
+  assert.match(html, /data-magnet-padding="120"/);
+  assert.match(html, /data-magnet-strength="3"/);
+  assert.match(html, /data-magnet-spring="58\/13\/88\/13"/);
   assert.match(html, /data-pointer-spread="65-105"/);
   assert.match(html, /data-tracking-boundary="\.bloom-hero-copy h1"/);
   assert.equal((html.match(/class="bee-swarm__bee"/g) ?? []).length, 10);

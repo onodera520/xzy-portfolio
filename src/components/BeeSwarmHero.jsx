@@ -4,13 +4,14 @@ import {
   clampTrailLength,
   createSeededBee,
   getBeeHeading,
-  getFlowerMagnetTarget,
+  getReactBitsMagnetTarget,
   getOrganicFlightSample,
   getResponsiveBeeCount,
   getSwarmMotion,
   getTrailSampleCount,
   isPointerInTrackingZone,
   shouldPauseSwarm,
+  stepFlowerSpring,
 } from "../lib/beeSwarm.js";
 import "./BeeSwarmHero.css";
 
@@ -31,9 +32,12 @@ export default function BeeSwarmHero({
   pointerSpread = [65, 105],
   speed = 2.5,
   trailLength = 32,
-  magnetRadius = 240,
-  magnetStrengthX = 24,
-  magnetStrengthY = 18,
+  magnetPadding = 120,
+  magnetStrength = 3,
+  magnetSpringStiffness = 58,
+  magnetActiveDamping = 13,
+  magnetReturnStiffness = 88,
+  magnetReturnDamping = 13,
   trackingBoundarySelector,
   enabled = true,
   children,
@@ -76,7 +80,8 @@ export default function BeeSwarmHero({
     let anchor = { x: 0, y: 0 };
     let pointer = { x: 0, y: 0 };
     let flowerCenter = { x: 0, y: 0 };
-    const flowerSpring = { x: 0, y: 0, vx: 0, vy: 0 };
+    let flowerMagnetBox = { center: { x: 0, y: 0 }, width: 0, height: 0 };
+    let flowerSpring = { x: 0, y: 0, vx: 0, vy: 0 };
 
     const setCanvasSize = () => {
       const rect = root.getBoundingClientRect();
@@ -98,6 +103,20 @@ export default function BeeSwarmHero({
             y: flowerRect.top - rect.top + (flowerRect.height * 0.45) - flowerSpring.y,
           }
         : { x: rect.width / 2, y: rect.height * 0.42 };
+      flowerMagnetBox = flowerRect
+        ? {
+            center: {
+              x: flowerRect.left - rect.left + (flowerRect.width / 2) - flowerSpring.x,
+              y: flowerRect.top - rect.top + (flowerRect.height / 2) - flowerSpring.y,
+            },
+            width: flowerRect.width,
+            height: flowerRect.height,
+          }
+        : {
+            center: { ...flowerCenter },
+            width: 0,
+            height: 0,
+          };
       if (!states.length) {
         states = renderedBees.map((index) => createSeededBee(index, flowerCenter, idleRange));
         anchor = { ...flowerCenter };
@@ -129,7 +148,7 @@ export default function BeeSwarmHero({
 
     const placeStaticBees = () => {
       setCanvasSize();
-      Object.assign(flowerSpring, { x: 0, y: 0, vx: 0, vy: 0 });
+      flowerSpring = { x: 0, y: 0, vx: 0, vy: 0 };
       if (flowerRef.current) {
         flowerRef.current.style.transform = "translateX(-50%) translate3d(0, 0, 0)";
       }
@@ -161,18 +180,19 @@ export default function BeeSwarmHero({
       const orbitRange = tracksPointer ? pointerRange : idleRange;
       const elapsedSeconds = now * 0.001;
 
-      const flowerTarget = getFlowerMagnetTarget(pointer, flowerCenter, {
+      const flowerTarget = getReactBitsMagnetTarget(pointer, flowerMagnetBox.center, {
         active: tracksPointer,
-        radius: magnetRadius,
-        maxX: magnetStrengthX,
-        maxY: magnetStrengthY,
+        width: flowerMagnetBox.width,
+        height: flowerMagnetBox.height,
+        padding: magnetPadding,
+        magnetStrength,
       });
-      const springStrength = 48;
-      const springDamping = 8.5;
-      flowerSpring.vx += ((flowerTarget.x - flowerSpring.x) * springStrength - (flowerSpring.vx * springDamping)) * dt;
-      flowerSpring.vy += ((flowerTarget.y - flowerSpring.y) * springStrength - (flowerSpring.vy * springDamping)) * dt;
-      flowerSpring.x += flowerSpring.vx * dt;
-      flowerSpring.y += flowerSpring.vy * dt;
+      const magnetEngaged = Math.abs(flowerTarget.x) > 0.001 || Math.abs(flowerTarget.y) > 0.001;
+      flowerSpring = stepFlowerSpring(flowerSpring, flowerTarget, {
+        stiffness: magnetEngaged ? magnetSpringStiffness : magnetReturnStiffness,
+        damping: magnetEngaged ? magnetActiveDamping : magnetReturnDamping,
+        dt,
+      });
       if (flowerRef.current) {
         flowerRef.current.style.transform = `translateX(-50%) translate3d(${flowerSpring.x}px, ${flowerSpring.y}px, 0)`;
       }
@@ -343,9 +363,12 @@ export default function BeeSwarmHero({
     desktopCount,
     enabled,
     idleSpread,
-    magnetRadius,
-    magnetStrengthX,
-    magnetStrengthY,
+    magnetPadding,
+    magnetStrength,
+    magnetActiveDamping,
+    magnetReturnDamping,
+    magnetReturnStiffness,
+    magnetSpringStiffness,
     pointerSpread,
     renderedBees,
     safeMobileCount,
@@ -362,7 +385,9 @@ export default function BeeSwarmHero({
       data-desktop-count={desktopCount}
       data-mobile-count={safeMobileCount}
       data-speed={speed}
-      data-magnet-radius={magnetRadius}
+      data-magnet-padding={magnetPadding}
+      data-magnet-strength={magnetStrength}
+      data-magnet-spring={`${magnetSpringStiffness}/${magnetActiveDamping}/${magnetReturnStiffness}/${magnetReturnDamping}`}
       data-pointer-spread={range(pointerSpread, [65, 105]).join("-")}
       data-tracking-boundary={trackingBoundarySelector || undefined}
     >

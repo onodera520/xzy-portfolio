@@ -152,9 +152,12 @@ function HomePage() {
               pointerSpread={[65, 105]}
               speed={2.5}
               trailLength={32}
-              magnetRadius={240}
-              magnetStrengthX={24}
-              magnetStrengthY={18}
+              magnetPadding={120}
+              magnetStrength={3}
+              magnetSpringStiffness={58}
+              magnetActiveDamping={13}
+              magnetReturnStiffness={88}
+              magnetReturnDamping={13}
               trackingBoundarySelector=".bloom-hero-copy h1"
             >
               <div className="bloom-hero-copy">

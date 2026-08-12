@@ -14,6 +14,7 @@
   --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --site-cursor: url("/cursors/floral-bee-cursor.png") 3 2, auto;
+  --interactive-cursor: url("/cursors/interactive-hand-cursor.png") 10 7, pointer;
 }
 
 * {
@@ -881,6 +882,37 @@ h3 {
     cursor: var(--site-cursor) !important;
   }
 
+  a[href],
+  button:not([disabled]),
+  input[type="range"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="submit"],
+  input[type="button"],
+  select:not([disabled]),
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="slider"],
+  .ag-panel {
+    cursor: var(--interactive-cursor) !important;
+  }
+
+  :is(
+    a[href],
+    button:not([disabled]),
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="slider"],
+    .ag-panel
+  ) * {
+    cursor: var(--interactive-cursor) !important;
+  }
+
   input[type="text"],
   input[type="search"],
   input[type="email"],
@@ -893,7 +925,9 @@ h3 {
   }
 
   [disabled],
-  [aria-disabled="true"] {
+  [aria-disabled="true"],
+  [disabled] *,
+  [aria-disabled="true"] * {
     cursor: not-allowed !important;
   }
 }
@@ -2608,7 +2642,7 @@ body {
   position: absolute;
   top: clamp(116px, 14vh, 150px);
   left: 50%;
-  width: clamp(300px, 25vw, 440px);
+  width: clamp(255px, 21.25vw, 374px);
   transform: translateX(-50%);
 }
 
@@ -2835,7 +2869,7 @@ body {
 
   .hero-stage .bee-swarm__flower {
     top: clamp(118px, 17vh, 155px);
-    width: min(67vw, 305px);
+    width: min(60vw, 275px);
   }
 
   .bloom-hero-copy {

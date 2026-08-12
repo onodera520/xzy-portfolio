@@ -56,6 +56,73 @@ export function getFlowerMagnetTarget(
   };
 }
 
+export function getReactBitsMagnetTarget(
+  pointer,
+  center,
+  {
+    active = true,
+    width = 0,
+    height = 0,
+    padding = 100,
+    magnetStrength = 2,
+  } = {},
+) {
+  if (!active || !pointer || !center) return { x: 0, y: 0 };
+
+  const safeWidth = Math.max(0, Number.isFinite(width) ? width : 0);
+  const safeHeight = Math.max(0, Number.isFinite(height) ? height : 0);
+  const safePadding = Math.max(0, Number.isFinite(padding) ? padding : 100);
+  const safeStrength = Math.max(0.1, Number.isFinite(magnetStrength) ? magnetStrength : 2);
+  const dx = pointer.x - center.x;
+  const dy = pointer.y - center.y;
+
+  if (
+    Math.abs(dx) >= (safeWidth / 2) + safePadding
+    || Math.abs(dy) >= (safeHeight / 2) + safePadding
+  ) {
+    return { x: 0, y: 0 };
+  }
+
+  return {
+    x: dx / safeStrength,
+    y: dy / safeStrength,
+  };
+}
+
+export function stepFlowerSpring(
+  state,
+  target,
+  { stiffness = 58, damping = 8.8, dt = 1 / 60 } = {},
+) {
+  const safeDt = Math.min(0.05, Math.max(0, Number.isFinite(dt) ? dt : 1 / 60));
+  const safeStiffness = Math.max(0, Number.isFinite(stiffness) ? stiffness : 58);
+  const safeDamping = Math.max(0, Number.isFinite(damping) ? damping : 8.8);
+  const next = {
+    x: Number.isFinite(state?.x) ? state.x : 0,
+    y: Number.isFinite(state?.y) ? state.y : 0,
+    vx: Number.isFinite(state?.vx) ? state.vx : 0,
+    vy: Number.isFinite(state?.vy) ? state.vy : 0,
+  };
+  const targetX = Number.isFinite(target?.x) ? target.x : 0;
+  const targetY = Number.isFinite(target?.y) ? target.y : 0;
+
+  next.vx += ((targetX - next.x) * safeStiffness - (next.vx * safeDamping)) * safeDt;
+  next.vy += ((targetY - next.y) * safeStiffness - (next.vy * safeDamping)) * safeDt;
+  next.x += next.vx * safeDt;
+  next.y += next.vy * safeDt;
+
+  if (
+    Math.abs(next.x - targetX) < 0.001
+    && Math.abs(next.y - targetY) < 0.001
+    && Math.abs(next.vx) < 0.001
+    && Math.abs(next.vy) < 0.001
+  ) {
+    return { x: targetX, y: targetY, vx: 0, vy: 0 };
+  }
+
+  return next;
+}
+
 export function isPointerInTrackingZone(pointer, zone) {
   if (!pointer || !zone) return false;
   return pointer.x >= zone.left
