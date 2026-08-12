@@ -23,6 +23,14 @@ after(async () => {
   await vite?.close();
 });
 
+test("bouquet mouse clicks do not retain a focus frame", async () => {
+  const { shouldSuppressFlowerPointerFocus } = await import("../src/lib/flowerPhysics.js");
+
+  assert.equal(shouldSuppressFlowerPointerFocus("mouse"), true);
+  assert.equal(shouldSuppressFlowerPointerFocus("touch"), false);
+  assert.equal(shouldSuppressFlowerPointerFocus(""), false);
+});
+
 test("project collection resolves each public case route", async () => {
   const { getProject, projects } = await import("../src/data/projects.js");
 
@@ -364,7 +372,7 @@ test("home route renders the complete portfolio story", async () => {
 
   assert.match(html, /DESIGN IN BLOOM/);
   assert.match(html, /Experience Designer \/ AI Product \/ Vibe Coding/);
-  assert.match(html, /VIEW PROJECTS/);
+  assert.match(html, /查看作品/);
   assert.match(html, /薛梓毅/);
   assert.match(html, /Ziyi Xue/);
   assert.match(html, /UI \/ UX \/ AI 体验设计/);
@@ -385,7 +393,7 @@ test("home route renders the complete portfolio story", async () => {
   assert.deepEqual(sectionOrder, [...sectionOrder].sort((a, b) => a - b));
   assert.match(html, /href="#work"/);
   assert.equal((html.match(/data-specular-button="true"/g) ?? []).length, 1);
-  assert.match(html, /<button[^>]*data-specular-button="true"[^>]*>[\s\S]*VIEW PROJECTS[\s\S]*<\/button>/);
+  assert.match(html, /<button[^>]*data-specular-button="true"[^>]*>[\s\S]*查看作品[\s\S]*<\/button>/);
   assert.doesNotMatch(html, /class="button button-light" href="#work"/);
   assert.doesNotMatch(html, /ai-terminal-card|QUESTION \/ EXPLORE \/ VERIFY/);
   assert.doesNotMatch(html, /data-hero-unicorn|unicornstudio/i);
@@ -440,6 +448,21 @@ test("homepage uses the Design in Bloom swarm and removes the old color backgrou
   assert.equal((html.match(/class="accordion-gallery/g) ?? []).length, 1);
 });
 
+test("homepage exposes the bloom physics layer and marquee floor", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.match(html, /data-bloom-physics="true"/);
+  assert.match(html, /data-burst-count="8"/);
+  assert.match(html, /data-mobile-burst-count="5"/);
+  assert.match(html, /data-max-flowers="30"/);
+  assert.match(html, /data-settle-ms="10000"/);
+  assert.match(html, /data-fade-ms="800"/);
+  assert.match(html, /data-flower-floor="true"/);
+  assert.match(html, /data-bloom-trigger="true"/);
+  assert.match(html, /aria-label="点击花束，让花朵绽放"/);
+});
+
 test("home headings use a semantic one-time character reveal", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
@@ -448,6 +471,25 @@ test("home headings use a semantic one-time character reveal", async () => {
   assert.match(html, /<h1[^>]*data-blur-text="true"/);
   assert.equal((html.match(/<h2[^>]*data-blur-text="true"/g) ?? []).length, 3);
   assert.match(html, /class="fade-content home-reveal"/);
+});
+
+test("hero title scrambles fixed character slots into the local bee image", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+  const heading = html.match(/<h1[^>]*aria-label="DESIGN IN BLOOM"[\s\S]*?<\/h1>/)?.[0] ?? "";
+
+  assert.match(heading, /data-scrambled-text="true"/);
+  assert.match(heading, /data-scramble-trigger="title"/);
+  assert.match(heading, /data-scramble-radius="120"/);
+  assert.match(heading, /data-scramble-limit="3"/);
+  assert.equal((heading.match(/class="blur-text__scramble-slot"/g) ?? []).length, 13);
+  assert.equal((heading.match(/blur-text__scramble-bee/g) ?? []).length, 13);
+  assert.equal((heading.match(/blur-text__scramble-flower/g) ?? []).length, 13);
+  assert.equal((heading.match(/blur-text__scramble-art/g) ?? []).length, 26);
+  assert.equal((heading.match(/src="\/hero\/design-in-bloom\/bee\.png"/g) ?? []).length, 13);
+  assert.equal((heading.match(/src="\/hero\/design-in-bloom\/flower-sprite\.png"/g) ?? []).length, 13);
+  assert.doesNotMatch(heading, /variable-proximity|proximity-glyph/);
+  assert.equal((heading.match(/aria-label="DESIGN IN BLOOM"/g) ?? []).length, 1);
 });
 
 test("homepage uses the standard React Bits pill motion without a pill logo", async () => {

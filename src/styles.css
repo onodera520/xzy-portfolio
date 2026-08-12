@@ -2053,6 +2053,56 @@ a.demo-open-link:focus-visible {
   text-shadow: 0 5px 34px rgba(34, 31, 29, 0.14);
 }
 
+.blur-text__scramble-slot {
+  position: relative;
+  display: inline-block;
+}
+
+.blur-text__scramble-letter {
+  display: inline-block;
+  will-change: opacity, transform;
+}
+
+.blur-text__scramble-sprite {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.52em;
+  height: 0.52em;
+  max-width: none;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.blur-text__scramble-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  opacity: 0;
+  object-fit: contain;
+  transform: scale(0.82) rotate(-8deg);
+  transform-origin: 50% 50%;
+  will-change: opacity, transform;
+}
+
+.blur-text__scramble-flower {
+  width: 0.48em;
+  height: 0.48em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blur-text__scramble-letter {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .blur-text__scramble-art {
+    display: none;
+  }
+}
+
 .home-page .hero-cta {
   display: flex;
   justify-content: center;

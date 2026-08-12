@@ -5,6 +5,7 @@ import AccordionGallery from "./components/AccordionGallery.jsx";
 import { FigmaCaseStudy } from "./components/FigmaCaseStudy.jsx";
 import { CaseOtherLink } from "./components/CaseOtherLink.jsx";
 import BeeSwarmHero from "./components/BeeSwarmHero.jsx";
+import BloomPhysicsExperience from "./components/BloomPhysicsExperience.jsx";
 import BlurText from "./components/BlurText.jsx";
 import FadeContent from "./components/FadeContent.jsx";
 import SpecularButton from "./components/SpecularButton.jsx";
@@ -141,6 +142,14 @@ function HomePage() {
     <>
       <Navigation homeLinks />
       <main className="home-page" data-brand-region="true" data-brand-contrast="light">
+        <BloomPhysicsExperience
+          flowerSrc="/hero/design-in-bloom/flower-sprite.png"
+          burstCount={8}
+          mobileBurstCount={5}
+          maxFlowers={30}
+          settleMs={10000}
+          fadeMs={800}
+        >
         <section className="hero" id="top">
           <div className="hero-stage shell">
             <BeeSwarmHero
@@ -166,6 +175,16 @@ function HomePage() {
                 text="DESIGN IN BLOOM"
                 threshold={0}
                 rootMargin="0px"
+                scramble={{
+                  radius: 120,
+                  minCount: 3,
+                  maxCount: 3,
+                  activeLimit: 3,
+                  minDuration: 0.35,
+                  maxDuration: 0.55,
+                  beeSrc: "/hero/design-in-bloom/bee.png",
+                  flowerSrc: "/hero/design-in-bloom/flower-sprite.png",
+                }}
               />
               <FadeContent className="home-reveal" delay={0.08} hero>
                 <p className="hero-role">Experience Designer / AI Product / Vibe Coding</p>
@@ -191,7 +210,7 @@ function HomePage() {
                     autoAnimate
                     onClick={() => scrollToSection("work")}
                   >
-                    VIEW PROJECTS
+                    查看作品
                   </SpecularButton>
                 </div>
               </FadeContent>
@@ -201,6 +220,7 @@ function HomePage() {
         </section>
 
         <HomeMarquee />
+        </BloomPhysicsExperience>
 
         <section className="about-section section" id="about">
           <div className="shell">

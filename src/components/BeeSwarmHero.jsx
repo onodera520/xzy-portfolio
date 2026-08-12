@@ -13,6 +13,12 @@ import {
   shouldPauseSwarm,
   stepFlowerSpring,
 } from "../lib/beeSwarm.js";
+import {
+  assignBeesToFlowers,
+  getCrownRegion,
+  shouldSuppressFlowerPointerFocus,
+} from "../lib/flowerPhysics.js";
+import { useBloomPhysics } from "./BloomPhysicsExperience.jsx";
 import "./BeeSwarmHero.css";
 
 const MOBILE_BREAKPOINT = 767;
@@ -46,7 +52,9 @@ export default function BeeSwarmHero({
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
   const flowerRef = useRef(null);
+  const bloomImpulseRef = useRef(0);
   const beeRefs = useRef([]);
+  const { flowerTargetsRef, spawnBurst } = useBloomPhysics();
   const desktopCount = Math.max(0, Math.round(count));
   const safeMobileCount = Math.min(desktopCount, Math.max(0, Math.round(mobileCount)));
   const renderedBees = useMemo(() => Array.from({ length: desktopCount }, (_, index) => index), [desktopCount]);
@@ -82,6 +90,9 @@ export default function BeeSwarmHero({
     let flowerCenter = { x: 0, y: 0 };
     let flowerMagnetBox = { center: { x: 0, y: 0 }, width: 0, height: 0 };
     let flowerSpring = { x: 0, y: 0, vx: 0, vy: 0 };
+    let bloomSpring = { y: 0, vy: 0 };
+    let handledBloomImpulse = bloomImpulseRef.current;
+    let flowerAssignments = new Map();
 
     const setCanvasSize = () => {
       const rect = root.getBoundingClientRect();
@@ -149,6 +160,7 @@ export default function BeeSwarmHero({
     const placeStaticBees = () => {
       setCanvasSize();
       flowerSpring = { x: 0, y: 0, vx: 0, vy: 0 };
+      bloomSpring = { y: 0, vy: 0 };
       if (flowerRef.current) {
         flowerRef.current.style.transform = "translateX(-50%) translate3d(0, 0, 0)";
       }
@@ -180,6 +192,17 @@ export default function BeeSwarmHero({
       const orbitRange = tracksPointer ? pointerRange : idleRange;
       const elapsedSeconds = now * 0.001;
 
+      if (handledBloomImpulse !== bloomImpulseRef.current) {
+        handledBloomImpulse = bloomImpulseRef.current;
+        bloomSpring = { y: 15, vy: -190 };
+      }
+      const bloomAcceleration = (-105 * bloomSpring.y) - (15 * bloomSpring.vy);
+      bloomSpring.vy += bloomAcceleration * dt;
+      bloomSpring.y += bloomSpring.vy * dt;
+      if (Math.abs(bloomSpring.y) < 0.02 && Math.abs(bloomSpring.vy) < 0.08) {
+        bloomSpring = { y: 0, vy: 0 };
+      }
+
       const flowerTarget = getReactBitsMagnetTarget(pointer, flowerMagnetBox.center, {
         active: tracksPointer,
         width: flowerMagnetBox.width,
@@ -194,20 +217,42 @@ export default function BeeSwarmHero({
         dt,
       });
       if (flowerRef.current) {
-        flowerRef.current.style.transform = `translateX(-50%) translate3d(${flowerSpring.x}px, ${flowerSpring.y}px, 0)`;
+        flowerRef.current.style.transform = `translateX(-50%) translate3d(${flowerSpring.x}px, ${flowerSpring.y + bloomSpring.y}px, 0)`;
       }
 
+      const rootRect = root.getBoundingClientRect();
+      const flowerTargets = flowerTargetsRef.current ?? [];
+      flowerAssignments = assignBeesToFlowers(
+        states.slice(0, activeCount).map((bee, index) => ({
+          id: index,
+          x: rootRect.left + bee.x,
+          y: rootRect.top + bee.y,
+        })),
+        flowerTargets,
+        flowerAssignments,
+        activeCount,
+      );
+      const flowerTargetById = new Map(flowerTargets.map((target) => [target.id, target]));
+
       states.slice(0, activeCount).forEach((bee, index) => {
+        const assignedFlower = flowerTargetById.get(flowerAssignments.get(index));
+        const localAnchor = assignedFlower
+          ? {
+              x: assignedFlower.x - rootRect.left,
+              y: assignedFlower.y - rootRect.top - assignedFlower.radius - 18,
+            }
+          : anchor;
+        const localOrbitRange = assignedFlower ? [10, 19] : orbitRange;
         const ratio = ((index * 0.61803398875) % 1);
-        const organic = getOrganicFlightSample(index, elapsedSeconds, tracksPointer);
-        const baseOrbitRadius = orbitRange[0] + ((orbitRange[1] - orbitRange[0]) * ratio);
+        const organic = getOrganicFlightSample(index, elapsedSeconds, assignedFlower ? true : tracksPointer);
+        const baseOrbitRadius = localOrbitRange[0] + ((localOrbitRange[1] - localOrbitRange[0]) * ratio);
         const orbitRadius = baseOrbitRadius * organic.radiusScale;
-        const dx = anchor.x - bee.x;
-        const dy = (anchor.y - bee.y) / organic.verticalScale;
+        const dx = localAnchor.x - bee.x;
+        const dy = (localAnchor.y - bee.y) / organic.verticalScale;
         const distance = Math.hypot(dx, dy) || 0.0001;
         const ux = dx / distance;
         const uy = dy / distance;
-        const band = Math.max(20, (orbitRange[1] - orbitRange[0]) * 0.75);
+        const band = Math.max(12, (localOrbitRange[1] - localOrbitRange[0]) * 0.75);
         const radial = Math.max(-1, Math.min(1, (distance - orbitRadius) / band));
         const directionDrift = 0.48 + (organic.turnBias * 0.72);
         const swirl = Math.sqrt(Math.max(0, 1 - (radial * radial))) * bee.direction * directionDrift;
@@ -229,7 +274,7 @@ export default function BeeSwarmHero({
           const dx = bee.x - other.x;
           const dy = bee.y - other.y;
           const distance = Math.hypot(dx, dy);
-          const separationDistance = tracksPointer ? 42 : 54;
+          const separationDistance = assignedFlower ? 30 : tracksPointer ? 42 : 54;
           if (distance > 0 && distance < separationDistance) {
             const force = (1 - (distance / separationDistance)) * motion.maxSpeed * 0.62;
             separationX += (dx / distance) * force;
@@ -375,7 +420,25 @@ export default function BeeSwarmHero({
     speed,
     trackingBoundarySelector,
     trailLength,
+    flowerTargetsRef,
   ]);
+
+  const triggerBloom = () => {
+    const rect = flowerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    bloomImpulseRef.current += 1;
+    spawnBurst(getCrownRegion(rect));
+  };
+
+  const handleFlowerKeyDown = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    triggerBloom();
+  };
+
+  const handleFlowerPointerDown = (event) => {
+    if (shouldSuppressFlowerPointerFocus(event.pointerType)) event.preventDefault();
+  };
 
   return (
     <div
@@ -410,11 +473,19 @@ export default function BeeSwarmHero({
         <img
           ref={flowerRef}
           className="bee-swarm__flower"
+          aria-label="点击花束，让花朵绽放"
+          role="button"
+          tabIndex="0"
+          data-bloom-trigger="true"
           src={flowerSrc}
           alt="黑白花束插画"
           width="1425"
           height="1600"
           decoding="async"
+          draggable="false"
+          onPointerDown={handleFlowerPointerDown}
+          onClick={triggerBloom}
+          onKeyDown={handleFlowerKeyDown}
           onError={(event) => { event.currentTarget.hidden = true; }}
         />
         {children}
