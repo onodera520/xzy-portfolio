@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 
-import { AITerminal } from "./components/AITerminal.jsx";
 import { HomeMarquee } from "./components/HomeMarquee.jsx";
-import { InteractionLab } from "./components/InteractionLab.jsx";
 import AccordionGallery from "./components/AccordionGallery.jsx";
 import { FigmaCaseStudy } from "./components/FigmaCaseStudy.jsx";
 import { CaseOtherLink } from "./components/CaseOtherLink.jsx";
@@ -14,9 +12,11 @@ import PillNav from "./components/PillNav.jsx";
 import EditorialAbout from "./components/EditorialAbout.jsx";
 import StaggeredMenu from "./components/StaggeredMenu.jsx";
 import ClickSpark from "./components/ClickSpark.jsx";
+import DesignProcess from "./components/DesignProcess.jsx";
 import { aboutProfile } from "./data/aboutProfile.js";
 import { getProject, homeSectionIds, projectGalleryItems } from "./data/projects.js";
 import { sidebarMenuGroups, sidebarStatusText } from "./data/sidebarMenu.js";
+import { useBrandContrast } from "./hooks/useBrandContrast.js";
 
 const SIDEBAR_LAYER_COLORS = ["#0B0B0B", "#454541", "#C8C6BF"];
 
@@ -85,17 +85,20 @@ export function scheduleHomeHashScroll({
 }
 
 function Navigation({ homeLinks = false, inverted = false }) {
+  const brandContrast = useBrandContrast({ defaultTheme: "light" });
   const anchor = homeLinks ? "#" : "/#";
   const items = [
     { label: "关于", href: `${anchor}about` },
     { label: "作品", href: `${anchor}work` },
     { label: "过程", href: `${anchor}process` },
-    { label: "互动实验", href: `${anchor}lab` },
     { label: "联系", href: `${anchor}contact` },
   ];
 
   return (
-    <header className={`site-nav${inverted ? " site-nav-solid" : ""}`}>
+    <header
+      className={`site-nav${inverted ? " site-nav-solid" : ""}`}
+      data-brand-contrast={brandContrast}
+    >
       <div className="nav-inner shell">
         <div className="nav-brand">
           <StaggeredMenu
@@ -103,7 +106,7 @@ function Navigation({ homeLinks = false, inverted = false }) {
             groups={sidebarMenuGroups}
             panelColor="#F7F6F2"
             statusText={sidebarStatusText}
-            triggerTone="dark"
+            triggerTone="inherit"
           />
           <a className="wordmark" href="/" aria-label="XUE STUDIO 作品集首页">XUE STUDIO</a>
         </div>
@@ -137,7 +140,7 @@ function HomePage() {
   return (
     <>
       <Navigation homeLinks />
-      <main className="home-page">
+      <main className="home-page" data-brand-region="true" data-brand-contrast="light">
         <section className="hero" id="top">
           <div className="hero-stage shell">
             <BeeSwarmHero
@@ -190,7 +193,6 @@ function HomePage() {
                 </div>
               </FadeContent>
               </div>
-              <a className="hero-lab-link" href="#lab">XUE&apos;S LAB <span aria-hidden="true">→</span></a>
             </BeeSwarmHero>
           </div>
         </section>
@@ -231,52 +233,14 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="ai-section section" id="process">
-          <div className="shell">
-            <div className="section-index">PROCESS / AI × DESIGN</div>
-            <div className="ai-heading-row">
-              <BlurText as="h2" text="设计过程与 AI" />
-              <p>不是替代判断，而是扩展问题空间。</p>
-            </div>
-            <div className="ai-layout">
-              <FadeContent className="home-reveal" delay={0.04}>
-                <div className="ai-terminal-card">
-                  <AITerminal />
-                  <span>QUESTION / EXPLORE / VERIFY</span>
-                </div>
-              </FadeContent>
-              <FadeContent className="home-reveal" delay={0.09}>
-                <div className="ai-copy">
-                  <p>我把 AI 看作放大提问、探索与验证的工具，而不是替代设计判断的答案。</p>
-                  <ul>
-                    <li><span>01</span>用 AI 展开问题空间，再由研究证据判断问题是否成立。</li>
-                    <li><span>02</span>用快速探索换取更多比较时间，而不是跳过取舍。</li>
-                    <li><span>03</span>不把生成内容伪装成真实用户研究结果。</li>
-                  </ul>
-                </div>
-              </FadeContent>
-            </div>
-          </div>
-        </section>
+        <DesignProcess />
 
-        <section className="lab-section section" id="lab">
-          <div className="lab-stage shell">
-            <div className="lab-heading">
-              <div className="section-index">LAB / INTERACTION</div>
-              <div className="lab-heading-row">
-                <BlurText as="h2" text="设计决策实验室" />
-                <FadeContent className="home-reveal" delay={0.05}>
-                  <p>好的设计不是选择最好看的方案，而是在不同价值与约束之间做出清楚判断。</p>
-                </FadeContent>
-              </div>
-            </div>
-            <FadeContent className="home-reveal home-reveal-block" delay={0.06}>
-              <InteractionLab />
-            </FadeContent>
-          </div>
-        </section>
-
-        <section className="contact-section section" id="contact">
+        <section
+          className="contact-section section"
+          id="contact"
+          data-brand-region="true"
+          data-brand-contrast="dark"
+        >
           <div className="shell contact-inner">
             <p>LET&apos;S TALK / OPEN TO WORK</p>
             <div className="contact-heading-row">
@@ -292,7 +256,7 @@ function HomePage() {
           </div>
         </section>
       </main>
-      <footer className="footer">
+      <footer className="footer" data-brand-region="true" data-brand-contrast="dark">
         <FadeContent className="home-reveal footer-reveal" delay={0.04}>
           <div className="shell footer-inner">
             <strong>XUE STUDIO</strong>

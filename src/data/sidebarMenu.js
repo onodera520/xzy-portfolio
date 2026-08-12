@@ -40,15 +40,6 @@ export const sidebarMenuGroups = [
     ],
   },
   {
-    title: "LAB",
-    titleZh: "实验",
-    link: "/#lab",
-    ariaLabel: "查看设计实验",
-    children: [
-      { label: "设计决策实验室", link: "/#lab" },
-    ],
-  },
-  {
     title: "CONTACT",
     titleZh: "联系",
     link: "/#contact",

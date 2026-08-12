@@ -29,10 +29,10 @@
 
 .scroll-velocity-copy {
   flex-shrink: 0;
-  padding: 0.14em 0.3em 0.18em 0;
+  padding: 0.12em 0.3em 0.15em 0;
   color: #f7f5ef;
   font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  font-size: clamp(2.4rem, 4.7vw, 5.6rem);
+  font-size: clamp(2rem, 3.8vw, 4.5rem);
   font-weight: 780;
   letter-spacing: -0.045em;
   line-height: 1;
@@ -44,7 +44,7 @@
 
 @media (max-width: 767px) {
   .scroll-velocity-copy {
-    font-size: clamp(1.75rem, 9vw, 3rem);
+    font-size: clamp(1.5rem, 7.2vw, 2.4rem);
     letter-spacing: -0.035em;
   }
 

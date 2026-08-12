@@ -6,7 +6,7 @@ export function CaseOtherLink({ project }) {
   const theme = caseFooterThemes[project.tone];
 
   return (
-    <footer className="case-flowing-menu">
+    <footer className="case-flowing-menu" data-brand-region="true" data-brand-contrast="dark">
       <FlowingMenu items={items} speed={15} {...theme} />
     </footer>
   );

@@ -1,0 +1,15 @@
+.scroll-reveal {
+  margin: 0;
+}
+
+.scroll-reveal__word {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal__word {
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

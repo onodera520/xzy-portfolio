@@ -1,6 +1,6 @@
 import { portfolioCases } from "./portfolioCases.js";
 
-export const homeSectionIds = ["top", "about", "work", "process", "lab", "contact"];
+export const homeSectionIds = ["top", "about", "work", "process", "contact"];
 
 export const homeMarqueeRows = [
   "UI/UX · RESEARCH · PRODUCT THINKING · ",

@@ -45,11 +45,13 @@ function createBoard(project, frame, height, title) {
   };
 }
 
-function createFrames(project, title, nodes, heights, chapterTitles) {
+function createFrames(project, title, nodes, heights, chapterTitles, darkFrameNumbers = []) {
+  const darkFrames = new Set(darkFrameNumbers);
   return nodes.map((nodeId, index) => ({
     number: String(index + 1).padStart(2, "0"),
     nodeId,
     title: chapterTitles[index],
+    brandContrast: darkFrames.has(index + 1) ? "dark" : "light",
     board: createBoard(project, index + 1, heights[index], title),
   }));
 }
@@ -63,6 +65,7 @@ const consumerFrames = createFrames(
   consumerNodes,
   consumerHeights,
   consumerChapterTitles,
+  [4, 12],
 );
 const enterpriseFrames = createFrames(
   "enterprise",
@@ -70,6 +73,7 @@ const enterpriseFrames = createFrames(
   enterpriseNodes,
   enterpriseHeights,
   enterpriseChapterTitles,
+  [1, 2, 3, 7, 10, 11, 13],
 );
 const campaignFrames = createFrames(
   "campaign",
@@ -77,6 +81,7 @@ const campaignFrames = createFrames(
   campaignNodes,
   campaignHeights,
   campaignChapterTitles,
+  [1],
 );
 
 export const portfolioCases = {

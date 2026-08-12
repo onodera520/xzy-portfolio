@@ -22,7 +22,11 @@ function PortfolioBoard({ frame, priority }) {
 
 export function FigmaCaseStudy({ project, Navigation }) {
   return (
-    <div className={`board-case board-case-${project.tone}`}>
+    <div
+      className={`board-case board-case-${project.tone}`}
+      data-brand-region="true"
+      data-brand-contrast="light"
+    >
       <Navigation inverted />
       <main>
         <div className="board-case-toolbar board-shell">
@@ -39,6 +43,8 @@ export function FigmaCaseStudy({ project, Navigation }) {
                 className="portfolio-board-entry"
                 id={getCaseFrameId(project.slug, index)}
                 data-case-frame-index={index}
+                data-brand-region="true"
+                data-brand-contrast={frame.brandContrast}
                 key={frame.nodeId}
               >
                 <PortfolioBoard frame={frame} priority={index === 0} />

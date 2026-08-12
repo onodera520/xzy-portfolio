@@ -68,6 +68,51 @@ test("project collection resolves each public case route", async () => {
   );
 });
 
+test("portfolio frames declare the preset contrast needed by the fixed brand", async () => {
+  const { getProject } = await import("../src/data/projects.js");
+  const expectedDarkFrames = {
+    consumer: ["04", "12"],
+    enterprise: ["01", "02", "03", "07", "10", "11", "13"],
+    campaign: ["01"],
+  };
+
+  for (const [slug, expected] of Object.entries(expectedDarkFrames)) {
+    const frames = getProject(slug).frames;
+    assert.equal(
+      frames.every((frame) => ["light", "dark"].includes(frame.brandContrast)),
+      true,
+      slug,
+    );
+    assert.deepEqual(
+      frames.filter((frame) => frame.brandContrast === "dark").map((frame) => frame.number),
+      expected,
+      slug,
+    );
+  }
+});
+
+test("home and case pages render declared light and dark brand regions", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const { getProject } = await import("../src/data/projects.js");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.match(homeHtml, /class="home-page"[^>]*data-brand-region="true"[^>]*data-brand-contrast="light"/);
+  assert.match(homeHtml, /id="process"[^>]*data-brand-region="true"[^>]*data-brand-contrast="dark"/);
+  assert.match(homeHtml, /id="contact"[^>]*data-brand-region="true"[^>]*data-brand-contrast="dark"/);
+  assert.match(homeHtml, /class="footer"[^>]*data-brand-region="true"[^>]*data-brand-contrast="dark"/);
+
+  for (const slug of ["consumer", "enterprise", "campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: `/work/${slug}` }));
+    assert.match(html, /class="board-case [^"]+"[^>]*data-brand-region="true"[^>]*data-brand-contrast="light"/, slug);
+    assert.equal(
+      (html.match(/class="portfolio-board-entry"[^>]*data-brand-region="true"[^>]*data-brand-contrast="(?:light|dark)"/g) ?? []).length,
+      getProject(slug).frames.length,
+      slug,
+    );
+    assert.match(html, /class="case-flowing-menu"[^>]*data-brand-region="true"[^>]*data-brand-contrast="dark"/, slug);
+  }
+});
+
 test("every complete artboard is local and parseable", async () => {
   const { projects } = await import("../src/data/projects.js");
   const importedProjects = projects.filter((project) => project.frames);
@@ -136,9 +181,46 @@ test("home gallery data contains three live cases and one local placeholder", as
     assert.equal(fs.existsSync(filePath), true, `${item.image} should exist`);
   }
 
-  assert.deepEqual(homeSectionIds, ["top", "about", "work", "process", "lab", "contact"]);
+  assert.deepEqual(homeSectionIds, ["top", "about", "work", "process", "contact"]);
   assert.equal(homeMarqueeRows.length, 2);
   assert.equal(homeMarqueeRows.every((row) => row.trim().length > 0), true);
+});
+
+test("design process data keeps five accountable steps and three local case proofs", async () => {
+  const { designProcess } = await import("../src/data/designProcess.js");
+
+  assert.deepEqual(
+    designProcess.steps.map((step) => `${step.number} ${step.title}`),
+    ["01 理解问题", "02 定义机会", "03 探索方案", "04 原型落地", "05 验证迭代"],
+  );
+  assert.equal(
+    designProcess.steps.every((step) => step.aiRole.length > 0 && step.designerRole.length > 0),
+    true,
+  );
+  assert.deepEqual(
+    designProcess.evidence.map((item) => item.link),
+    ["/work/consumer", "/work/enterprise", "/work/campaign"],
+  );
+  assert.deepEqual(
+    designProcess.evidence.flatMap((item) => item.images.map((image) => image.src)),
+    [
+      "/portfolio/consumer/boards/frame-04.webp",
+      "/portfolio/consumer/boards/frame-10.webp",
+      "/portfolio/enterprise/boards/frame-14.webp",
+      "/portfolio/campaign/boards/frame-02.webp",
+    ],
+  );
+
+  for (const image of designProcess.evidence.flatMap((item) => item.images)) {
+    assert.match(image.src, /^\/portfolio\/.+\.webp$/);
+    assert.match(image.mobile, /-960\.webp$/);
+    assert.equal(Number.isInteger(image.width) && image.width > 0, true);
+    assert.equal(Number.isInteger(image.height) && image.height > 0, true);
+    for (const publicPath of [image.src, image.mobile]) {
+      const filePath = path.join(process.cwd(), "public", ...publicPath.split("/").filter(Boolean));
+      assert.equal(fs.existsSync(filePath), true, `${publicPath} should exist`);
+    }
+  }
 });
 
 test("case footer data excludes the current case and appends the disabled AI product", async () => {
@@ -201,30 +283,6 @@ test("only the enterprise gallery cover anchors to the top center", async () => 
     React.createElement(AccordionGallery, { items: projectGalleryItems }),
   );
   assert.equal((html.match(/object-position:center top/g) ?? []).length, 1);
-});
-
-test("decision lab favors user value when it clearly leads", async () => {
-  const { calculateDecision } = await import("../src/lib/decision.js");
-  const result = calculateDecision({ user: 90, business: 48, effort: 35 });
-
-  assert.equal(result.key, "user-first");
-  assert.match(result.title, /用户/);
-});
-
-test("decision lab reduces scope when effort dominates", async () => {
-  const { calculateDecision } = await import("../src/lib/decision.js");
-  const result = calculateDecision({ user: 54, business: 56, effort: 92 });
-
-  assert.equal(result.key, "reduce-scope");
-  assert.match(result.title, /范围/);
-});
-
-test("decision lab identifies a balanced direction", async () => {
-  const { calculateDecision } = await import("../src/lib/decision.js");
-  const result = calculateDecision({ user: 76, business: 72, effort: 42 });
-
-  assert.equal(result.key, "balanced");
-  assert.match(result.title, /平衡/);
 });
 
 test("homepage CTA and hash navigation use their intended scroll behavior", async () => {
@@ -307,7 +365,6 @@ test("home route renders the complete portfolio story", async () => {
   assert.match(html, /DESIGN IN BLOOM/);
   assert.match(html, /Experience Designer \/ AI Product \/ Vibe Coding/);
   assert.match(html, /VIEW PROJECTS/);
-  assert.match(html, /XUE&#x27;S LAB/);
   assert.match(html, /薛梓毅/);
   assert.match(html, /Ziyi Xue/);
   assert.match(html, /UI \/ UX \/ AI 体验设计/);
@@ -319,20 +376,18 @@ test("home route renders the complete portfolio story", async () => {
   assert.doesNotMatch(html, /ABOUT \/ ME/);
   assert.doesNotMatch(html, /pc-card-wrapper|data-tilt-enabled/);
   assert.match(html, /精选作品/);
-  assert.match(html, /设计决策实验室/);
-  assert.match(html, /设计过程与 AI/);
+  assert.match(html, /我的设计工作流/);
   assert.match(html, /保持联系/);
-  const sectionOrder = ["about", "work", "process", "lab", "contact"].map(
+  const sectionOrder = ["about", "work", "process", "contact"].map(
     (sectionId) => html.indexOf(`id="${sectionId}"`),
   );
   assert.equal(sectionOrder.every((position) => position >= 0), true);
   assert.deepEqual(sectionOrder, [...sectionOrder].sort((a, b) => a - b));
   assert.match(html, /href="#work"/);
-  assert.match(html, /href="#lab"/);
   assert.equal((html.match(/data-specular-button="true"/g) ?? []).length, 1);
   assert.match(html, /<button[^>]*data-specular-button="true"[^>]*>[\s\S]*VIEW PROJECTS[\s\S]*<\/button>/);
   assert.doesNotMatch(html, /class="button button-light" href="#work"/);
-  assert.match(html, /data-faulty-terminal="true"/);
+  assert.doesNotMatch(html, /ai-terminal-card|QUESTION \/ EXPLORE \/ VERIFY/);
   assert.doesNotMatch(html, /data-hero-unicorn|unicornstudio/i);
   assert.doesNotMatch(html, /FULLSCREEN VIDEO PLACEHOLDER|<video/);
   assert.equal((html.match(/class="accordion-gallery/g) ?? []).length, 1);
@@ -346,6 +401,28 @@ test("home route renders the complete portfolio story", async () => {
   assert.doesNotMatch(html, /class="project-card/);
 });
 
+test("homepage removes the interaction lab without changing the remaining section order", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const { sidebarMenuGroups } = await import("../src/data/sidebarMenu.js");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.doesNotMatch(
+    html,
+    /id="lab"|href="#lab"|XUE(?:&#x27;|')S LAB|设计决策实验室|lab-section/,
+  );
+  assert.equal((html.match(/class="pill"/g) ?? []).length, 4);
+
+  const sectionOrder = ["about", "work", "process", "contact"].map(
+    (sectionId) => html.indexOf(`id="${sectionId}"`),
+  );
+  assert.equal(sectionOrder.every((position) => position >= 0), true);
+  assert.deepEqual(sectionOrder, [...sectionOrder].sort((a, b) => a - b));
+  assert.deepEqual(
+    sidebarMenuGroups.map((group) => group.title),
+    ["HOME", "ABOUT", "PROJECTS", "PROCESS", "CONTACT"],
+  );
+});
+
 test("homepage uses the Design in Bloom swarm and removes the old color backgrounds", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
@@ -356,8 +433,8 @@ test("homepage uses the Design in Bloom swarm and removes the old color backgrou
   assert.equal((html.match(/data-bee-swarm="true"/g) ?? []).length, 1);
   assert.match(html, /\/hero\/design-in-bloom\/flower\.png/);
   assert.match(html, /\/hero\/design-in-bloom\/bee\.png/);
-  assert.equal((html.match(/data-faulty-terminal="true"/g) ?? []).length, 1);
-  assert.match(html, /class="ai-terminal-card"[\s\S]*data-faulty-terminal="true"/);
+  assert.equal((html.match(/data-faulty-terminal="true"/g) ?? []).length, 0);
+  assert.doesNotMatch(html, /ai-terminal-card|QUESTION \/ EXPLORE \/ VERIFY/);
   assert.doesNotMatch(html, /soft-aurora|home-liquid-background|hero-aurora/i);
   assert.equal(packageJson.dependencies.three, undefined);
   assert.equal((html.match(/class="accordion-gallery/g) ?? []).length, 1);
@@ -367,9 +444,9 @@ test("home headings use a semantic one-time character reveal", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.equal((html.match(/data-blur-text="true"/g) ?? []).length, 5);
+  assert.equal((html.match(/data-blur-text="true"/g) ?? []).length, 4);
   assert.match(html, /<h1[^>]*data-blur-text="true"/);
-  assert.equal((html.match(/<h2[^>]*data-blur-text="true"/g) ?? []).length, 4);
+  assert.equal((html.match(/<h2[^>]*data-blur-text="true"/g) ?? []).length, 3);
   assert.match(html, /class="fade-content home-reveal"/);
 });
 
@@ -406,7 +483,6 @@ test("homepage navigation uses Chinese labels with the existing section anchors"
     ["关于", "#about"],
     ["作品", "#work"],
     ["过程", "#process"],
-    ["互动实验", "#lab"],
     ["联系", "#contact"],
   ]) {
     assert.match(html, new RegExp(`<a href="${href}"[^>]*aria-label="${label}"`));
@@ -429,7 +505,7 @@ test("homepage uses one shared capsule with transparent hover-only items", async
 
   assert.doesNotMatch(homeHtml, /pill-nav--frameless/);
   assert.match(homeHtml, /--pill-bg:transparent/);
-  assert.equal((homeHtml.match(/class="pill-hover-circle"/g) ?? []).length, 5);
+  assert.equal((homeHtml.match(/class="pill-hover-circle"/g) ?? []).length, 4);
   assert.doesNotMatch(detailDesktopNav, /is-active/);
   assert.match(pillCss, /\.pill-nav \.pill::after\s*\{[^}]*content:\s*none/s);
 });
@@ -458,11 +534,77 @@ test("the flower, swarm and hero copy keep distinct visual layers", async () => 
   assert.match(html, /class="bee-swarm__bees"/);
   assert.match(html, /class="bee-swarm__foreground"/);
   assert.match(html, /class="bloom-hero-copy"/);
-  assert.match(html, /class="ai-terminal-card"/);
-  assert.match(html, /data-faulty-terminal="true"/);
+  assert.doesNotMatch(html, /ai-terminal-card|QUESTION \/ EXPLORE \/ VERIFY/);
   assert.ok(html.indexOf('class="bee-swarm__trail"') < html.indexOf('class="bee-swarm__bees"'));
   assert.ok(html.indexOf('class="bee-swarm__bees"') < html.indexOf('class="bee-swarm__foreground"'));
-  assert.ok(html.indexOf('class="ai-terminal-card"') < html.indexOf('data-faulty-terminal="true"'));
+});
+
+test("homepage renders the React Bits process board without the retired AI terminal", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.match(html, /PROCESS \/ AI × DESIGN/);
+  assert.match(html, /我的设计工作流/);
+  assert.match(html, /AI 参与从研究到验证的全过程，但不替代证据、取舍与责任。/);
+  assert.equal((html.match(/data-process-step=/g) ?? []).length, 5);
+  assert.equal((html.match(/<dt>AI 参与<\/dt>/g) ?? []).length, 8);
+  assert.equal((html.match(/<dt>我的判断<\/dt>/g) ?? []).length, 8);
+  assert.equal((html.match(/data-process-evidence=/g) ?? []).length, 3);
+  for (const href of ["/work/consumer", "/work/enterprise", "/work/campaign"]) {
+    assert.match(html, new RegExp(`href="${href}"`));
+  }
+  assert.equal((html.match(/data-spotlight-card="true"/g) ?? []).length, 8);
+  assert.equal((html.match(/data-scroll-reveal="true"/g) ?? []).length, 1);
+  assert.ok((html.match(/data-scroll-reveal-token="true"/g) ?? []).length >= 20);
+  assert.equal((html.match(/class="process-evidence__image"/g) ?? []).length, 4);
+  assert.ok((html.match(/loading="lazy"/g) ?? []).length >= 4);
+  assert.ok((html.match(/decoding="async"/g) ?? []).length >= 4);
+  assert.match(html, /AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。/);
+  assert.doesNotMatch(html, /ai-terminal-card|ai-terminal|QUESTION \/ EXPLORE \/ VERIFY/);
+});
+
+test("the process board owns its dark theme instead of inheriting the editorial paper section", () => {
+  const globalCss = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+  const processCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "DesignProcess.css"),
+    "utf8",
+  );
+
+  assert.doesNotMatch(
+    globalCss,
+    /\.home-page \.about-section,[\s\S]*?\.home-page \.ai-section,[\s\S]*?background:\s*var\(--bloom-paper\)/,
+  );
+  assert.doesNotMatch(globalCss, /\.home-page \.ai-section\s*\{[^}]*background:/s);
+  assert.match(processCss, /\.home-page \.process-board \.process-board__eyebrow\s*\{/);
+});
+
+test("process conclusion becomes a rounded black-framed vertical project marquee", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.equal((html.match(/data-vertical-project-marquee="true"/g) ?? []).length, 1);
+  assert.match(html, /id="process-marquee"/);
+  assert.equal((html.match(/class="vertical-project-marquee__column"/g) ?? []).length, 4);
+  assert.equal((html.match(/class="vertical-project-marquee__cap is-top"/g) ?? []).length, 1);
+  assert.equal((html.match(/class="vertical-project-marquee__cap is-bottom"/g) ?? []).length, 1);
+  assert.equal((html.match(/class="vertical-project-marquee__statement"/g) ?? []).length, 1);
+  assert.match(html, /AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。/);
+  assert.equal((html.match(/class="vertical-project-marquee__image"/g) ?? []).length, 32);
+  assert.match(html, /\/portfolio\/consumer\/boards\/frame-04\.webp/);
+  assert.match(html, /\/portfolio\/enterprise\/boards\/frame-14\.webp/);
+  assert.match(html, /\/portfolio\/campaign\/boards\/frame-02\.webp/);
+  assert.match(html, /-960\.webp/);
+  assert.doesNotMatch(html, /scroll-reveal process-board__conclusion/);
+});
+
+test("SpotlightCard enables pointer tracking only for fine hover pointers", async () => {
+  const { canUseSpotlightPointer } = await vite.ssrLoadModule(
+    "/src/components/SpotlightCard.jsx",
+  );
+
+  assert.equal(canUseSpotlightPointer(), false);
+  assert.equal(canUseSpotlightPointer({ matchMedia: () => ({ matches: false }) }), false);
+  assert.equal(canUseSpotlightPointer({ matchMedia: () => ({ matches: true }) }), true);
 });
 
 test("accordion gallery declares complete 1920 by 1080 cover dimensions", async () => {
@@ -543,7 +685,11 @@ test("portfolio detail chrome stays readable on the light editorial background",
     .join("");
   const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
 
-  assert.equal((detailHtml.match(/sm-menu-trigger sm-trigger-dark/g) ?? []).length, 3);
+  assert.equal((detailHtml.match(/sm-menu-trigger sm-trigger-inherit/g) ?? []).length, 3);
+  assert.equal(
+    (detailHtml.match(/<header[^>]*data-brand-contrast="light"/g) ?? []).length,
+    3,
+  );
   assert.doesNotMatch(detailHtml, /sm-menu-trigger sm-trigger-light/);
   assert.match(
     css,
@@ -927,28 +1073,27 @@ test("BorderGlow intro animation exposes cleanup for pending timer work", async 
   assert.deepEqual(calls, [["timeout", 41]]);
 });
 
-test("every public route uses the editorial five-link navigation with CV and contact actions", async () => {
+test("every public route uses the editorial four-link navigation with CV and contact actions", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
   assert.equal((homeHtml.match(/class="site-nav"/g) ?? []).length, 1);
   assert.equal((homeHtml.match(/class="wordmark"/g) ?? []).length, 1);
   assert.match(homeHtml, /XUE STUDIO/);
-  assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 5);
+  assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 4);
   assert.match(homeHtml, />CV<\/a>/);
   assert.match(homeHtml, /aria-label="联系 XUE STUDIO"/);
-  for (const href of ["#about", "#work", "#process", "#lab", "#contact"]) {
+  for (const href of ["#about", "#work", "#process", "#contact"]) {
     assert.match(homeHtml, new RegExp(`href="${href}"`));
   }
 
   for (const route of ["/work/consumer", "/work/enterprise", "/work/campaign"]) {
     const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
     assert.equal((html.match(/class="site-nav site-nav-solid"/g) ?? []).length, 1, route);
-    assert.equal((html.match(/class="pill(?: is-active)?"/g) ?? []).length, 5, route);
+    assert.equal((html.match(/class="pill(?: is-active)?"/g) ?? []).length, 4, route);
     assert.match(html, /href="\/#work"/);
     assert.match(html, /href="\/#about"/);
     assert.match(html, /href="\/#process"/);
-    assert.match(html, /href="\/#lab"/);
     assert.match(html, /href="\/#contact"/);
     assert.doesNotMatch(html, /class="pill is-active"/);
     assert.match(html, /<a href="\/#work" class="is-active">作品<\/a>/);
@@ -1088,7 +1233,6 @@ test("sidebar navigation data exposes grouped site and project shortcuts", async
       "ABOUT / 关于",
       "PROJECTS / 作品",
       "PROCESS / 过程",
-      "LAB / 实验",
       "CONTACT / 联系",
     ],
   );
@@ -1104,7 +1248,6 @@ test("sidebar navigation data exposes grouped site and project shortcuts", async
       "/work/enterprise",
       "/work/campaign",
       "/#process",
-      "/#lab",
       "/#contact",
     ],
   );
@@ -1159,12 +1302,29 @@ test("every public page exposes the same grouped sidebar menu", async () => {
     const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
 
     assert.equal((html.match(/class="staggered-menu-root/g) ?? []).length, 1, route);
-    assert.equal((html.match(/class="sm-menu-group"/g) ?? []).length, 6, route);
+    assert.equal((html.match(/class="sm-menu-group"/g) ?? []).length, 5, route);
     assert.match(html, /href="\/work\/consumer"/, route);
     assert.match(html, /href="\/work\/enterprise"/, route);
     assert.match(html, /href="\/work\/campaign"/, route);
     assert.match(html, /aria-disabled="true"/, route);
     assert.doesNotMatch(html, /href="\/work\/ai-product"/, route);
+  }
+});
+
+test("every public navigation exposes one shared adaptive brand contrast", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+
+  for (const route of ["/", "/work/consumer", "/work/enterprise", "/work/campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: route }));
+
+    assert.equal((html.match(/class="nav-brand"/g) ?? []).length, 1, route);
+    assert.match(html, /<header[^>]*data-brand-contrast="light"/, route);
+    assert.match(html, /class="sm-menu-trigger sm-trigger-inherit"/, route);
+    assert.match(
+      html,
+      /class="nav-brand"[\s\S]*class="sm-menu-trigger sm-trigger-inherit"[\s\S]*class="wordmark"/,
+      route,
+    );
   }
 });
 

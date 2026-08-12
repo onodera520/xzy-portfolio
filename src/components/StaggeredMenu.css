@@ -27,6 +27,10 @@
   color: #fff;
 }
 
+.sm-trigger-inherit {
+  color: inherit;
+}
+
 .staggered-menu-root[data-open] .sm-menu-trigger {
   color: #0b0b0b;
 }
