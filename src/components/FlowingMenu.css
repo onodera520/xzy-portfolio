@@ -1,6 +1,6 @@
 .flowing-menu {
   width: 100%;
-  height: clamp(420px, 46vw, 640px);
+  height: 360px;
   overflow: hidden;
 }
 
@@ -106,7 +106,7 @@
 
 @media (max-width: 767px) {
   .flowing-menu {
-    height: 360px;
+    height: 288px;
   }
 
   .flowing-menu__link,

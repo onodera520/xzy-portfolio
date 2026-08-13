@@ -25,12 +25,21 @@ test("desktop content scales from About downward without touching navigation or 
   assert.doesNotMatch(desktopScaleBlock, /\.site-nav|\.hero-stage|\.home-marquee/);
 });
 
-test("portfolio cases share the narrower desktop shell while mobile widths stay unchanged", () => {
+test("portfolio cases keep narrow content but use a full-width compressed footer menu", () => {
   const css = read("src/styles.css");
+  const menuCss = read("src/components/FlowingMenu.css");
+  const desktopScaleBlock = css.match(/\/\* Portfolio content scale: desktop and tablet only \*\/[\s\S]*?\/\* End portfolio content scale \*\//)?.[0] ?? "";
 
   assert.match(css, /@media\s*\(min-width:\s*768px\)\s*\{[\s\S]*\.board-shell[\s\S]*width:\s*var\(--portfolio-content-width\)/);
   assert.match(css, /\.case-page\.shell[\s\S]*width:\s*var\(--portfolio-content-width\)/);
-  assert.match(css, /\.case-flowing-menu[\s\S]*width:\s*var\(--portfolio-content-width\)/);
+  assert.doesNotMatch(desktopScaleBlock, /\.case-flowing-menu\s*,/);
+  assert.match(css, /\.case-flowing-menu\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none[^}]*margin:\s*64px 0 0/s);
+  assert.match(css, /\.case-flowing-menu \.flowing-menu\s*\{[^}]*height:\s*360px/s);
+  assert.match(css, /\.case-reader-layout\s*\{[^}]*padding:\s*clamp\(28px,\s*3vw,\s*48px\) 0 0/s);
+  assert.match(menuCss, /\.flowing-menu\s*\{[^}]*height:\s*360px/s);
+  assert.match(menuCss, /@media\s*\(max-width:\s*767px\)\s*\{[\s\S]*\.flowing-menu\s*\{[^}]*height:\s*288px/s);
+  assert.match(css, /@media\s*\(max-width:\s*767px\)\s*\{[\s\S]*\.case-flowing-menu\s*\{[^}]*margin:\s*32px 0 0/s);
+  assert.match(css, /@media\s*\(max-width:\s*767px\)\s*\{[\s\S]*\.case-reader-layout\s*\{[^}]*padding:\s*14px 0 0/s);
   assert.match(css, /@media\s*\(max-width:\s*767px\)\s*\{[\s\S]*\.board-shell\s*\{[^}]*width:\s*calc\(100%\s*-\s*24px\)/);
 });
 
