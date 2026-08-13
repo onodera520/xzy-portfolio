@@ -1358,6 +1358,26 @@ test("editorial About keeps its desktop split and mobile portrait-first layout",
   assert.match(css, /overflow-wrap:\s*anywhere/);
 });
 
+test("editorial About introduction and strengths use the full information column", () => {
+  const css = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "EditorialAbout.css"),
+    "utf8",
+  );
+
+  assert.match(
+    css,
+    /\.editorial-about__intro\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none/s,
+  );
+  assert.match(
+    css,
+    /\.editorial-about__strength-list\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none/s,
+  );
+  assert.match(
+    css,
+    /\.editorial-about__strength-list li\s*\{[^}]*max-width:\s*none/s,
+  );
+});
+
 test("editorial About data contains the complete public profile", async () => {
   const { aboutProfile } = await import("../src/data/aboutProfile.js");
 
@@ -1365,6 +1385,11 @@ test("editorial About data contains the complete public profile", async () => {
   assert.equal(aboutProfile.englishName, "Ziyi Xue");
   assert.equal(aboutProfile.education.length, 2);
   assert.equal(aboutProfile.experience.achievements.length, 5);
+  assert.equal(aboutProfile.strengths.length, 3);
+  assert.deepEqual(
+    aboutProfile.strengths.map((item) => item.title),
+    ["Agent深度实践与研究", "全场景AI设计提效", "AI落地能力"],
+  );
   assert.deepEqual(
     aboutProfile.contacts.map((item) => item.value),
     ["18668155572", "2830008192@qq.com", "onodera1006"],
@@ -1390,6 +1415,15 @@ test("EditorialAbout renders quantified achievements as semantic emphasis", asyn
   ]) {
     assert.match(html, new RegExp(`<strong>${value.replaceAll("+", "\\+")}</strong>`));
   }
+  for (const title of ["Agent深度实践与研究", "全场景AI设计提效", "AI落地能力"]) {
+    assert.match(html, new RegExp(`<strong>${title}</strong>`));
+  }
+  assert.match(html, /Codex/);
+  assert.match(html, /Claude Code/);
+  assert.match(html, /Harness/);
+  assert.match(html, /更少的 Token/);
+  assert.match(html, /Vibe Coding/);
+  assert.match(html, /标准化 AI 视觉工作流或 Skill/);
   assert.match(html, /href="tel:18668155572"/);
   assert.match(html, /href="mailto:2830008192@qq\.com"/);
   assert.match(html, /<span[^>]*>onodera1006<\/span>/);
@@ -1404,6 +1438,57 @@ test("EditorialAbout renders quantified achievements as semantic emphasis", asyn
     portraitIndex < contactsIndex && contactsIndex < portraitImageIndex,
     "contacts should sit above the portrait image inside the portrait column",
   );
+});
+
+test("PortraitChromaReveal renders a grayscale portrait with a decorative color layer", async () => {
+  const { aboutProfile } = await import("../src/data/aboutProfile.js");
+  const { default: PortraitChromaReveal } = await vite.ssrLoadModule(
+    "/src/components/PortraitChromaReveal.jsx",
+  );
+  const html = renderToStaticMarkup(
+    React.createElement(PortraitChromaReveal, {
+      portrait: aboutProfile.portrait,
+    }),
+  );
+
+  assert.equal((html.match(/src="\/about\/ziyi-xue-cutout\.png"/g) ?? []).length, 2);
+  assert.equal((html.match(/class="editorial-about__portrait-image/g) ?? []).length, 2);
+  assert.match(html, new RegExp(`alt="${aboutProfile.portrait.alt}"`));
+  assert.match(html, /alt=""[^>]*aria-hidden="true"/);
+  assert.match(html, /class="editorial-about__portrait-stage portrait-chroma-reveal"/);
+});
+
+test("portrait chroma pointer coordinates stay inside the portrait stage", async () => {
+  const { getRelativePointerPosition, isPointerInsideElement } = await vite.ssrLoadModule(
+    "/src/components/PortraitChromaReveal.jsx",
+  );
+  const element = {
+    getBoundingClientRect: () => ({ left: 20, top: 40, width: 200, height: 400 }),
+  };
+
+  assert.deepEqual(
+    getRelativePointerPosition({ clientX: 120, clientY: 240 }, element),
+    { x: 50, y: 50 },
+  );
+  assert.deepEqual(
+    getRelativePointerPosition({ clientX: -100, clientY: 1000 }, element),
+    { x: 0, y: 100 },
+  );
+  assert.equal(isPointerInsideElement({ clientX: 120, clientY: 240 }, element), true);
+  assert.equal(isPointerInsideElement({ clientX: 10, clientY: 240 }, element), false);
+});
+
+test("portrait chroma reveal is fine-pointer gated and adds no card border", () => {
+  const css = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "EditorialAbout.css"),
+    "utf8",
+  );
+
+  assert.match(css, /@media\s*\(hover:\s*hover\)\s*and\s*\(pointer:\s*fine\)/);
+  assert.match(css, /@supports\s*\(mask-image:\s*radial-gradient\(#000,\s*transparent\)\)/);
+  assert.match(css, /\.portrait-chroma-reveal__color\s*\{[^}]*opacity:\s*0/s);
+  assert.match(css, /\.portrait-chroma-reveal\.is-active\s+\.portrait-chroma-reveal__color\s*\{[^}]*opacity:\s*1/s);
+  assert.doesNotMatch(css, /portrait-chroma-reveal[^\{]*\{[^}]*border:/s);
 });
 
 test("removed color backgrounds and their Three.js dependency do not ship", () => {

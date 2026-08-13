@@ -70,15 +70,42 @@ export const aboutProfile = {
       },
     ],
   },
-  strength: {
-    parts: [
-      { text: "我是 ChatGPT、Gemini 及 " },
-      { text: "AI Coding", strong: true },
-      { text: " 工具的深度使用者，持续研究 AI 产品体验设计。注重 " },
-      { text: "Token 成本与产出质量", strong: true },
-      { text: "，已经形成从调研、构思、原型到验证的个人 AI 工作流。" },
-    ],
-  },
+  strengths: [
+    {
+      title: "Agent深度实践与研究",
+      parts: [
+        { text: "：以 " },
+        { text: "Codex", strong: true },
+        { text: " 为日常主力提效工具，长期用于设计落地、自动化部署与工作流提效；并利用 AI 完成对 " },
+        { text: "Claude Code", strong: true },
+        { text: " 的底层拆解调研，对 " },
+        { text: "Harness 调度、状态外置、长任务管理", strong: true },
+        { text: "等有一定了解。不仅能用好 AI，能用" },
+        { text: "更少的 Token 做相同的事", strong: true },
+        { text: "，更能看懂 AI。" },
+      ],
+    },
+    {
+      title: "全场景AI设计提效",
+      parts: [
+        { text: "：可运用 AI 工具完成从" },
+        { text: "用户调研、低保真原型到视觉方向探索", strong: true },
+        { text: "的全流程设计提效，并能高效搭建组件库，帮助设计提效；同时对 " },
+        { text: "AI 产品体验设计", strong: true },
+        { text: "有一定理解。" },
+      ],
+    },
+    {
+      title: "AI落地能力",
+      parts: [
+        { text: "：可独立利用 " },
+        { text: "Vibe Coding", strong: true },
+        { text: " 能力完成项目 Demo 搭建、验证与部署；并可搭建" },
+        { text: "标准化 AI 视觉工作流或 Skill", strong: true },
+        { text: "，沉淀可复用资产，支撑项目高效产出。" },
+      ],
+    },
+  ],
   contacts: [
     { label: "电话", value: "18668155572", href: "tel:18668155572" },
     {

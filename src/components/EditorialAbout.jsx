@@ -1,4 +1,5 @@
 import "./EditorialAbout.css";
+import PortraitChromaReveal from "./PortraitChromaReveal.jsx";
 
 function RichText({ parts }) {
   return parts.map((part, index) =>
@@ -61,7 +62,14 @@ export default function EditorialAbout({ profile }) {
           aria-labelledby="about-strength-title"
         >
           <h3 id="about-strength-title">个人优势</h3>
-          <p><RichText parts={profile.strength.parts} /></p>
+          <ul className="editorial-about__strength-list">
+            {profile.strengths.map((item) => (
+              <li key={item.title}>
+                <strong>{item.title}</strong>
+                <RichText parts={item.parts} />
+              </li>
+            ))}
+          </ul>
         </section>
 
       </div>
@@ -79,17 +87,7 @@ export default function EditorialAbout({ profile }) {
             </div>
           ))}
         </address>
-        <div className="editorial-about__portrait-stage">
-          <img
-            className="editorial-about__portrait-image"
-            src={profile.portrait.src}
-            alt={profile.portrait.alt}
-            width={profile.portrait.width}
-            height={profile.portrait.height}
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
+        <PortraitChromaReveal portrait={profile.portrait} />
       </div>
     </article>
   );
