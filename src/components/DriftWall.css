@@ -1,8 +1,9 @@
 .drift-wall {
   --drift-gap: 12px;
+  --drift-column-gap: 24px;
   --drift-radius: 16px;
-  --drift-tile-width: 264px;
-  --drift-tile-height: 169.4px;
+  --drift-tile-width: 303.6px;
+  --drift-tile-height: 194.81px;
   position: relative;
   width: 100%;
   min-height: clamp(660px, 52vw, 820px);
@@ -18,7 +19,7 @@
   left: 50%;
   display: grid;
   grid-template-columns: repeat(5, var(--drift-tile-width));
-  gap: var(--drift-gap);
+  gap: var(--drift-column-gap);
   transform-style: preserve-3d;
   transform-origin: center;
   will-change: transform;
@@ -132,8 +133,9 @@
 
 @media (max-width: 767px) {
   .drift-wall {
-    --drift-tile-width: 184px;
-    --drift-tile-height: 118px;
+    --drift-column-gap: 18px;
+    --drift-tile-width: 198.72px;
+    --drift-tile-height: 127.44px;
     min-height: 620px;
   }
 

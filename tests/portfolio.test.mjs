@@ -681,9 +681,14 @@ test("process ending becomes a full-bleed DriftWall without a center statement p
     driftWallCss,
     /\.drift-wall__media\.is-active\s*\{[^}]*transform:\s*translate3d\(0,\s*-12px,\s*var\(--drift-lift,\s*76px\)\)/s,
   );
-  assert.match(driftWallCss, /--drift-tile-width:\s*264px/);
-  assert.match(driftWallCss, /--drift-tile-height:\s*169\.4px/);
+  assert.match(driftWallCss, /--drift-tile-width:\s*303\.6px/);
+  assert.match(driftWallCss, /--drift-tile-height:\s*194\.81px/);
   assert.match(driftWallCss, /--drift-gap:\s*12px/);
+  assert.match(driftWallCss, /--drift-column-gap:\s*24px/);
+  assert.match(
+    driftWallCss,
+    /\.drift-wall__plane\s*\{[^}]*gap:\s*var\(--drift-column-gap\)/s,
+  );
   assert.match(driftWallCss, /--drift-radius:\s*16px/);
   assert.match(driftWallCss, /filter:\s*grayscale\(var\(--drift-grayscale,\s*1\)\)/);
   assert.match(
@@ -697,6 +702,10 @@ test("process ending becomes a full-bleed DriftWall without a center statement p
   assert.match(
     driftWallCss,
     /@media\s*\(max-width:\s*767px\)[\s\S]*\.drift-wall__column:nth-child\(n \+ 3\)/s,
+  );
+  assert.match(
+    driftWallCss,
+    /@media\s*\(max-width:\s*767px\)[\s\S]*--drift-column-gap:\s*18px[\s\S]*--drift-tile-width:\s*198\.72px[\s\S]*--drift-tile-height:\s*127\.44px/s,
   );
 });
 
