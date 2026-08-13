@@ -31,6 +31,17 @@ test("bouquet mouse clicks do not retain a focus frame", async () => {
   assert.equal(shouldSuppressFlowerPointerFocus(""), false);
 });
 
+test("the bouquet carries its poke hint without changing the hero flow", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+  const css = fs.readFileSync(path.join(process.cwd(), "src", "components", "BeeSwarmHero.css"), "utf8");
+
+  assert.match(html, /class="bee-swarm__flower-motion"/);
+  assert.match(html, /class="bee-swarm__flower-hint"[^>]*>戳我试试↑<\/span>/);
+  assert.match(css, /\.bee-swarm__flower-motion\s*\{[^}]*position:\s*absolute/s);
+  assert.match(css, /\.bee-swarm__flower-hint\s*\{[^}]*position:\s*absolute/s);
+});
+
 test("project collection resolves each public case route", async () => {
   const { getProject, projects } = await import("../src/data/projects.js");
 
@@ -612,7 +623,7 @@ test("homepage renders the React Bits process board without the retired AI termi
   assert.equal((html.match(/class="process-evidence__image"/g) ?? []).length, 4);
   assert.ok((html.match(/loading="lazy"/g) ?? []).length >= 4);
   assert.ok((html.match(/decoding="async"/g) ?? []).length >= 4);
-  assert.match(html, /AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。/);
+  assert.match(html, /aria-label="AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。"/);
   assert.doesNotMatch(html, /ai-terminal-card|ai-terminal|QUESTION \/ EXPLORE \/ VERIFY/);
 });
 
@@ -641,13 +652,27 @@ test("process conclusion becomes a rounded black-framed vertical project marquee
   assert.equal((html.match(/class="vertical-project-marquee__cap is-top"/g) ?? []).length, 1);
   assert.equal((html.match(/class="vertical-project-marquee__cap is-bottom"/g) ?? []).length, 1);
   assert.equal((html.match(/class="vertical-project-marquee__statement"/g) ?? []).length, 1);
-  assert.match(html, /AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。/);
+  assert.equal((html.match(/class="vertical-project-marquee__statement-line"/g) ?? []).length, 2);
+  assert.match(html, /aria-label="AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。"/);
   assert.equal((html.match(/class="vertical-project-marquee__image"/g) ?? []).length, 32);
   assert.match(html, /\/portfolio\/consumer\/boards\/frame-04\.webp/);
   assert.match(html, /\/portfolio\/enterprise\/boards\/frame-14\.webp/);
   assert.match(html, /\/portfolio\/campaign\/boards\/frame-02\.webp/);
   assert.match(html, /-960\.webp/);
   assert.doesNotMatch(html, /scroll-reveal process-board__conclusion/);
+
+  const marqueeCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "VerticalProjectMarquee.css"),
+    "utf8",
+  );
+  assert.match(
+    marqueeCss,
+    /\.vertical-project-marquee\s*\{[^}]*background:\s*#08090b;/s,
+  );
+  assert.match(
+    marqueeCss,
+    /\.vertical-project-marquee__window\s*\{[^}]*inset:\s*0;/s,
+  );
 });
 
 test("SpotlightCard enables pointer tracking only for fine hover pointers", async () => {
@@ -1126,7 +1151,7 @@ test("BorderGlow intro animation exposes cleanup for pending timer work", async 
   assert.deepEqual(calls, [["timeout", 41]]);
 });
 
-test("every public route uses the editorial four-link navigation with CV and contact actions", async () => {
+test("every public route uses the editorial four-link navigation with GitHub and contact actions", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
@@ -1134,8 +1159,22 @@ test("every public route uses the editorial four-link navigation with CV and con
   assert.equal((homeHtml.match(/class="wordmark"/g) ?? []).length, 1);
   assert.match(homeHtml, /XUE STUDIO/);
   assert.equal((homeHtml.match(/class="pill"/g) ?? []).length, 4);
-  assert.match(homeHtml, />CV<\/a>/);
+  assert.match(homeHtml, /href="https:\/\/github\.com\/onodera520\/xzy-portfolio"/);
+  assert.match(homeHtml, /target="_blank"/);
+  assert.match(homeHtml, /rel="noreferrer"/);
+  assert.match(homeHtml, /aria-label="在 GitHub 查看 XZY Portfolio"/);
+  assert.match(homeHtml, /class="nav-github"/);
+  assert.match(homeHtml, /<svg[^>]*class="nav-github__icon"/);
+  assert.doesNotMatch(homeHtml, />CV<\/a>/);
   assert.match(homeHtml, /aria-label="联系 XUE STUDIO"/);
+  assert.match(homeHtml, /<button[^>]*class="nav-mail"[^>]*aria-haspopup="dialog"[^>]*aria-expanded="false"/);
+  assert.equal((homeHtml.match(/aria-haspopup="dialog"/g) ?? []).length, 2);
+  assert.match(
+    homeHtml,
+    /<button[^>]*class="contact-mark"[^>]*aria-label="打开联系方式"[^>]*aria-haspopup="dialog"/,
+  );
+  assert.doesNotMatch(homeHtml, /<a[^>]*class="nav-mail"/);
+  assert.doesNotMatch(homeHtml, /class="contact-modal"/);
   for (const href of ["#about", "#work", "#process", "#contact"]) {
     assert.match(homeHtml, new RegExp(`href="${href}"`));
   }
@@ -1148,9 +1187,87 @@ test("every public route uses the editorial four-link navigation with CV and con
     assert.match(html, /href="\/#about"/);
     assert.match(html, /href="\/#process"/);
     assert.match(html, /href="\/#contact"/);
+    assert.match(html, /href="https:\/\/github\.com\/onodera520\/xzy-portfolio"/);
+    assert.match(html, /aria-label="在 GitHub 查看 XZY Portfolio"/);
     assert.doesNotMatch(html, /class="pill is-active"/);
     assert.match(html, /<a href="\/#work" class="is-active">作品<\/a>/);
   }
+});
+
+test("ContactModal renders only when open with the approved links and existing decorations", async () => {
+  const { default: ContactModal } = await vite.ssrLoadModule("/src/components/ContactModal.jsx");
+  const closedHtml = renderToStaticMarkup(
+    React.createElement(ContactModal, { open: false, onClose() {} }),
+  );
+  const openHtml = renderToStaticMarkup(
+    React.createElement(ContactModal, { open: true, onClose() {} }),
+  );
+
+  assert.equal(closedHtml, "");
+  assert.match(openHtml, /role="dialog"/);
+  assert.match(openHtml, /aria-modal="true"/);
+  assert.match(openHtml, /src="\/contact\/wechat-qr\.png"/);
+  assert.match(openHtml, /alt="微信二维码"/);
+  assert.match(openHtml, /微信联系/);
+  assert.match(openHtml, /保持联系/);
+  assert.match(openHtml, /通过邮箱联系/);
+  assert.match(openHtml, /href="https:\/\/wx\.mail\.qq\.com\/\?cancel_login=true&amp;from=get_ticket_fail"/);
+  assert.match(openHtml, /target="_blank"/);
+  assert.match(openHtml, /src="\/contact\/qq-logo\.png"/);
+  assert.match(openHtml, /class="contact-modal__qq-logo"/);
+  assert.doesNotMatch(openHtml, /<span[^>]*>↗<\/span>/);
+  assert.match(openHtml, /src="\/hero\/design-in-bloom\/bee\.png"/);
+  assert.match(openHtml, /src="\/hero\/design-in-bloom\/flower\.png"/);
+  assert.match(openHtml, /src="\/hero\/design-in-bloom\/flower-sprite\.png"/);
+});
+
+test("the contact modal uses the provided local WeChat QR image", () => {
+  const qrPath = path.join(process.cwd(), "public", "contact", "wechat-qr.png");
+
+  assert.equal(fs.existsSync(qrPath), true);
+  const bytes = fs.readFileSync(qrPath);
+  assert.equal(bytes.subarray(1, 4).toString("ascii"), "PNG");
+  assert.equal(bytes.readUInt32BE(16), 662);
+  assert.equal(bytes.readUInt32BE(20), 662);
+});
+
+test("the contact modal uses the provided local square QQ logo", () => {
+  const logoPath = path.join(process.cwd(), "public", "contact", "qq-logo.png");
+
+  assert.equal(fs.existsSync(logoPath), true);
+  const bytes = fs.readFileSync(logoPath);
+  assert.equal(bytes.subarray(1, 4).toString("ascii"), "PNG");
+  assert.equal(bytes.readUInt32BE(16), bytes.readUInt32BE(20));
+});
+
+test("the homepage contact mark inverts with pointer-safe motion and a reduced-motion fallback", () => {
+  const styles = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+
+  assert.match(
+    styles,
+    /\.contact-mark:focus-visible\s*{[^}]*background:\s*var\(--bloom-ink\)[^}]*color:\s*#fff[^}]*rotate\(8deg\) scale\(1\.04\)/s,
+  );
+  assert.match(
+    styles,
+    /@media \(hover: hover\) and \(pointer: fine\)\s*{[^}]*\.contact-mark:hover\s*{[^}]*background:\s*var\(--bloom-ink\)[^}]*color:\s*#fff[^}]*rotate\(8deg\) scale\(1\.04\)/s,
+  );
+  assert.match(
+    styles,
+    /\.contact-mark:active\s*{[^}]*rotate\(8deg\) scale\(0\.97\)/s,
+  );
+  assert.match(
+    styles,
+    /@media \(prefers-reduced-motion: reduce\)\s*{[^}]*\.contact-mark[^}]*{[^}]*transition-duration:\s*0ms[^}]*rotate\(8deg\) scale\(1\)/s,
+  );
+});
+
+test("the homepage contact container does not clip the transformed contact mark", () => {
+  const styles = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
+
+  assert.match(
+    styles,
+    /\.home-page \.contact-inner\s*{[^}]*width:\s*min\([^}]*overflow:\s*visible/s,
+  );
 });
 
 test("the editorial About portrait is a local PNG with transparency", () => {

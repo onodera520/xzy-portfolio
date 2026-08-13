@@ -2305,11 +2305,47 @@ a.demo-open-link:focus-visible {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
+  padding: 0;
   border-radius: 50%;
   background: #050505;
   color: #fff;
   font-size: clamp(36px, 4vw, 68px);
+  cursor: var(--interactive-cursor);
   transform: rotate(8deg);
+  transition: transform 220ms var(--motion-ease-out);
+}
+
+.contact-mark:focus-visible {
+  background: var(--bloom-ink);
+  color: #fff;
+  outline: 3px solid currentColor;
+  outline-offset: 6px;
+  transform: rotate(8deg) scale(1.04);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-mark:hover {
+    background: var(--bloom-ink);
+    color: #fff;
+    transform: rotate(8deg) scale(1.04);
+  }
+}
+
+.contact-mark:active {
+  background: var(--bloom-ink);
+  color: #fff;
+  transform: rotate(8deg) scale(0.97);
+  transition-duration: 100ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-mark,
+  .contact-mark:hover,
+  .contact-mark:focus-visible,
+  .contact-mark:active {
+    transition-duration: 0ms;
+    transform: rotate(8deg) scale(1);
+  }
 }
 
 .home-page .contact-bottom {
@@ -2631,29 +2667,34 @@ body {
   gap: 10px;
 }
 
-.nav-actions a {
+.nav-actions a,
+.nav-actions button {
   width: 48px;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
+  padding: 0;
   border: 1px solid rgb(11 11 11 / 5%);
   border-radius: 50%;
   background: rgb(255 255 255 / 78%);
   color: var(--bloom-ink);
   font-size: 12px;
   font-weight: 850;
+  cursor: var(--interactive-cursor);
   box-shadow: 0 8px 30px rgb(15 13 10 / 4%);
   transition: color 180ms var(--motion-ease-out), background 180ms var(--motion-ease-out), transform 180ms var(--motion-ease-out);
 }
 
-.nav-actions a:focus-visible {
+.nav-actions a:focus-visible,
+.nav-actions button:focus-visible {
   background: var(--bloom-ink);
   color: #fff;
   transform: translateY(-2px);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .nav-actions a:hover {
+  .nav-actions a:hover,
+  .nav-actions button:hover {
     background: var(--bloom-ink);
     color: #fff;
     transform: translateY(-2px);
@@ -2662,6 +2703,12 @@ body {
 
 .nav-mail {
   font-size: 18px !important;
+}
+
+.nav-github__icon {
+  width: 21px;
+  height: 21px;
+  display: block;
 }
 
 .home-page .hero {
@@ -2698,7 +2745,7 @@ body {
   min-height: calc(100svh - 12px);
 }
 
-.hero-stage .bee-swarm__flower {
+.hero-stage .bee-swarm__flower-motion {
   position: absolute;
   top: clamp(116px, 14vh, 150px);
   left: 50%;
@@ -2804,7 +2851,8 @@ body {
 
 .home-page .contact-inner {
   width: min(calc(100% - clamp(48px, 7vw, 132px)), 1700px);
-  padding: clamp(90px, 10vw, 180px) 0 clamp(54px, 6vw, 96px);
+  padding: clamp(56px, 5vw, 84px) 0 clamp(46px, 4vw, 72px);
+  overflow: visible;
   border-radius: 0;
   background: transparent;
 }
@@ -2927,7 +2975,7 @@ body {
     border-radius: 18px;
   }
 
-  .hero-stage .bee-swarm__flower {
+  .hero-stage .bee-swarm__flower-motion {
     top: clamp(118px, 17vh, 155px);
     width: min(60vw, 275px);
   }
@@ -2953,7 +3001,7 @@ body {
 
   .home-page .contact-inner {
     width: calc(100% - 32px);
-    padding-block: 84px 50px;
+    padding-block: 56px 42px;
   }
 
   .footer {

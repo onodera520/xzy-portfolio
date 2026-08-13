@@ -470,24 +470,26 @@ export default function BeeSwarmHero({
         ))}
       </div>
       <div className="bee-swarm__foreground">
-        <img
-          ref={flowerRef}
-          className="bee-swarm__flower"
-          aria-label="点击花束，让花朵绽放"
-          role="button"
-          tabIndex="0"
-          data-bloom-trigger="true"
-          src={flowerSrc}
-          alt="黑白花束插画"
-          width="1425"
-          height="1600"
-          decoding="async"
-          draggable="false"
-          onPointerDown={handleFlowerPointerDown}
-          onClick={triggerBloom}
-          onKeyDown={handleFlowerKeyDown}
-          onError={(event) => { event.currentTarget.hidden = true; }}
-        />
+        <div ref={flowerRef} className="bee-swarm__flower-motion">
+          <img
+            className="bee-swarm__flower"
+            aria-label="点击花束，让花朵绽放"
+            role="button"
+            tabIndex="0"
+            data-bloom-trigger="true"
+            src={flowerSrc}
+            alt="黑白花束插画"
+            width="1425"
+            height="1600"
+            decoding="async"
+            draggable="false"
+            onPointerDown={handleFlowerPointerDown}
+            onClick={triggerBloom}
+            onKeyDown={handleFlowerKeyDown}
+            onError={(event) => { event.currentTarget.hidden = true; }}
+          />
+          <span className="bee-swarm__flower-hint" aria-hidden="true">戳我试试↑</span>
+        </div>
         {children}
       </div>
     </div>

@@ -119,6 +119,12 @@ export default function VerticalProjectMarquee({
   const { activeRef } = useMotionActivity(rootRef);
   const { scrollY } = useScroll();
   const rawScrollVelocity = useVelocity(scrollY);
+  const statementLines = useMemo(() => {
+    if (typeof statement !== "string" || !statement.includes("；")) return [statement];
+
+    const [firstLine, ...remainingLines] = statement.split("；");
+    return [`${firstLine}；`, remainingLines.join("；")];
+  }, [statement]);
   const columns = useMemo(
     () => Array.from({ length: 4 }, (_, columnIndex) => {
       if (images.length === 0) return [];
@@ -156,8 +162,14 @@ export default function VerticalProjectMarquee({
         </div>
         <div className="vertical-project-marquee__scrim" aria-hidden="true" />
         <div className="vertical-project-marquee__statement">
-          <span>AI × DESIGN / POSITION</span>
-          <p>{statement}</p>
+          <span className="vertical-project-marquee__eyebrow">AI × DESIGN / POSITION</span>
+          <p aria-label={statement}>
+            {statementLines.map((line) => (
+              <span className="vertical-project-marquee__statement-line" key={line}>
+                {line}
+              </span>
+            ))}
+          </p>
         </div>
       </div>
       <div className="vertical-project-marquee__cap is-bottom" aria-hidden="true" />

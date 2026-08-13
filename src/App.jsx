@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 
 import { HomeMarquee } from "./components/HomeMarquee.jsx";
+import {
+  ContactDialogProvider,
+  useContactDialog,
+} from "./components/ContactDialogProvider.jsx";
 import AccordionGallery from "./components/AccordionGallery.jsx";
 import { FigmaCaseStudy } from "./components/FigmaCaseStudy.jsx";
 import { CaseOtherLink } from "./components/CaseOtherLink.jsx";
@@ -88,6 +92,7 @@ export function scheduleHomeHashScroll({
 
 function Navigation({ homeLinks = false, inverted = false }) {
   const brandContrast = useBrandContrast({ defaultTheme: "light" });
+  const { contactOpen, openContactDialog } = useContactDialog();
   const anchor = homeLinks ? "#" : "/#";
   const items = [
     { label: "关于", href: `${anchor}about` },
@@ -97,11 +102,12 @@ function Navigation({ homeLinks = false, inverted = false }) {
   ];
 
   return (
-    <header
-      className={`site-nav${inverted ? " site-nav-solid" : ""}`}
-      data-brand-contrast={brandContrast}
-    >
-      <div className="nav-inner shell">
+    <>
+      <header
+        className={`site-nav${inverted ? " site-nav-solid" : ""}`}
+        data-brand-contrast={brandContrast}
+      >
+        <div className="nav-inner shell">
         <div className="nav-brand">
           <StaggeredMenu
             colors={SIDEBAR_LAYER_COLORS}
@@ -117,11 +123,39 @@ function Navigation({ homeLinks = false, inverted = false }) {
           activeHref={homeLinks ? undefined : `${anchor}work`}
         />
         <div className="nav-actions">
-          <a href={`${anchor}contact`} aria-label="查看简历信息">CV</a>
-          <a href={`${anchor}contact`} aria-label="联系 XUE STUDIO" className="nav-mail">✉</a>
+          <a
+            href="https://github.com/onodera520/xzy-portfolio"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="在 GitHub 查看 XZY Portfolio"
+            className="nav-github"
+          >
+            <svg
+              className="nav-github__icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                fill="currentColor"
+                d="M12 .7a11.3 11.3 0 0 0-3.57 22c.57.1.77-.24.77-.55v-2.18c-3.17.69-3.84-1.35-3.84-1.35-.52-1.31-1.26-1.66-1.26-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.73 2.65 1.23 3.3.94.1-.73.4-1.23.72-1.51-2.53-.29-5.19-1.27-5.19-5.59 0-1.23.44-2.24 1.16-3.03-.12-.29-.5-1.44.11-2.99 0 0 .95-.3 3.11 1.16a10.8 10.8 0 0 1 5.66 0c2.16-1.46 3.1-1.16 3.1-1.16.62 1.55.23 2.7.12 2.99.72.79 1.16 1.8 1.16 3.03 0 4.33-2.67 5.29-5.21 5.58.41.36.77 1.05.77 2.12v3.16c0 .31.21.66.78.55A11.3 11.3 0 0 0 12 .7Z"
+              />
+            </svg>
+          </a>
+          <button
+            type="button"
+            aria-label="联系 XUE STUDIO"
+            className="nav-mail"
+            aria-haspopup="dialog"
+            aria-expanded={contactOpen}
+            onClick={openContactDialog}
+          >
+            ✉
+          </button>
         </div>
-      </div>
-    </header>
+        </div>
+      </header>
+    </>
   );
 }
 
@@ -135,6 +169,8 @@ function MediaPlaceholder({ label, className = "" }) {
 }
 
 function HomePage({ previousDocumentPath = null }) {
+  const { contactOpen, openContactDialog } = useContactDialog();
+
   useEffect(() => {
     return scheduleHomeHashScroll();
   }, []);
@@ -273,7 +309,16 @@ function HomePage({ previousDocumentPath = null }) {
             <p>LET&apos;S TALK / OPEN TO WORK</p>
             <div className="contact-heading-row">
               <BlurText as="h2" text={"保持联系，\n一起把问题想清楚。"} />
-              <span className="contact-mark" aria-hidden="true">↗</span>
+              <button
+                className="contact-mark"
+                type="button"
+                aria-label="打开联系方式"
+                aria-haspopup="dialog"
+                aria-expanded={contactOpen}
+                onClick={openContactDialog}
+              >
+                <span aria-hidden="true">↗</span>
+              </button>
             </div>
             <FadeContent className="home-reveal" delay={0.06}>
               <div className="contact-bottom">
@@ -368,15 +413,17 @@ export default function App({ initialPath, previousDocumentPath = null }) {
   }
 
   return (
-    <ClickSpark
-      sparkColor="#ffffff"
-      sparkSize={10}
-      sparkRadius={18}
-      sparkCount={8}
-      duration={320}
-      easing="ease-out"
-    >
-      {page}
-    </ClickSpark>
+    <ContactDialogProvider>
+      <ClickSpark
+        sparkColor="#ffffff"
+        sparkSize={10}
+        sparkRadius={18}
+        sparkCount={8}
+        duration={320}
+        easing="ease-out"
+      >
+        {page}
+      </ClickSpark>
+    </ContactDialogProvider>
   );
 }

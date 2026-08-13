@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
 import "./PillNav.css";
+import { createEntranceLatch } from "../lib/entranceLatch.js";
 import { getPillLayoutSize } from "../lib/pillGeometry.js";
 
 const MOBILE_MENU_ID = "pill-nav-mobile-menu";
@@ -25,6 +26,8 @@ export default function PillNav({
   const desktopRef = useRef(null);
   const toggleRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const entranceLatchRef = useRef(null);
+  if (!entranceLatchRef.current) entranceLatchRef.current = createEntranceLatch();
 
   useEffect(() => {
     let cancelled = false;
@@ -78,25 +81,42 @@ export default function PillNav({
     window.addEventListener("resize", layout);
     document.fonts?.ready.then(layout).catch(() => undefined);
 
-    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    if (initialLoadAnimation && desktopRef.current && !reducedMotion) {
-      gsap.fromTo(
-        desktopRef.current,
-        { opacity: 0, y: -10, scaleX: 0.86, transformOrigin: "right center" },
-        { opacity: 1, y: 0, scaleX: 1, duration: 0.6, ease },
-      );
-    } else if (desktopRef.current) {
-      gsap.set(desktopRef.current, { opacity: 1, y: 0, scaleX: 1 });
-    }
-
     return () => {
       cancelled = true;
       window.removeEventListener("resize", layout);
       timelineRefs.current.forEach((timeline) => timeline?.kill());
       activeTweenRefs.current.forEach((tween) => tween?.kill());
-      gsap.killTweensOf([desktopRef.current, toggleRef.current, mobileMenuRef.current]);
     };
-  }, [ease, initialLoadAnimation, items]);
+  }, [ease, items]);
+
+  useEffect(() => {
+    const desktop = desktopRef.current;
+    if (!desktop) return undefined;
+
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    let entranceTween = null;
+    if (entranceLatchRef.current.shouldAnimate(initialLoadAnimation, reducedMotion)) {
+      entranceTween = gsap.fromTo(
+        desktop,
+        { opacity: 0, y: -10, scaleX: 0.86, transformOrigin: "right center" },
+        {
+          opacity: 1,
+          y: 0,
+          scaleX: 1,
+          duration: 0.6,
+          ease,
+          onComplete: () => entranceLatchRef.current.complete(),
+        },
+      );
+    } else {
+      gsap.set(desktop, { opacity: 1, y: 0, scaleX: 1 });
+    }
+
+    return () => {
+      entranceTween?.kill();
+      entranceLatchRef.current.cancel();
+    };
+  }, [ease, initialLoadAnimation]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;

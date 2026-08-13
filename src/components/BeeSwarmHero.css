@@ -41,18 +41,39 @@
   pointer-events: none;
 }
 
-.bee-swarm__foreground > *:not(.bee-swarm__flower) {
+.bee-swarm__foreground > *:not(.bee-swarm__flower-motion) {
   pointer-events: auto;
 }
 
+.bee-swarm__flower-motion {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+}
+
 .bee-swarm__flower {
-  width: clamp(220px, 27vw, 425px);
+  width: 100%;
   height: auto;
   display: block;
   user-select: none;
   pointer-events: auto;
   cursor: pointer;
-  will-change: transform;
+}
+
+.bee-swarm__flower-hint {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 50%;
+  color: rgb(17 17 17 / 62%);
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+  font-size: clamp(11px, 0.72vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  user-select: none;
+  pointer-events: none;
 }
 
 .bee-swarm__flower:focus-visible {
@@ -66,14 +87,15 @@
     width: clamp(27px, 9vw, 39px);
   }
 
-  .bee-swarm__flower {
-    width: min(67vw, 305px);
+  .bee-swarm__flower-hint {
+    top: calc(100% + 7px);
+    font-size: 11px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .bee-swarm__bee,
-  .bee-swarm__flower {
+  .bee-swarm__flower-motion {
     will-change: auto;
   }
 }
