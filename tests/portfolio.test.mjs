@@ -623,7 +623,7 @@ test("homepage renders the React Bits process board without the retired AI termi
   assert.equal((html.match(/class="process-evidence__image"/g) ?? []).length, 4);
   assert.ok((html.match(/loading="lazy"/g) ?? []).length >= 4);
   assert.ok((html.match(/decoding="async"/g) ?? []).length >= 4);
-  assert.match(html, /aria-label="AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。"/);
+  assert.doesNotMatch(html, /aria-label="AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。"/);
   assert.doesNotMatch(html, /ai-terminal-card|ai-terminal|QUESTION \/ EXPLORE \/ VERIFY/);
 });
 
@@ -642,36 +642,61 @@ test("the process board owns its dark theme instead of inheriting the editorial 
   assert.match(processCss, /\.home-page \.process-board \.process-board__eyebrow\s*\{/);
 });
 
-test("process conclusion becomes a rounded black-framed vertical project marquee", async () => {
+test("process ending becomes a full-bleed DriftWall without a center statement panel", async () => {
   const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
   const html = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
 
-  assert.equal((html.match(/data-vertical-project-marquee="true"/g) ?? []).length, 1);
-  assert.match(html, /id="process-marquee"/);
-  assert.equal((html.match(/class="vertical-project-marquee__column"/g) ?? []).length, 4);
-  assert.equal((html.match(/class="vertical-project-marquee__cap is-top"/g) ?? []).length, 1);
-  assert.equal((html.match(/class="vertical-project-marquee__cap is-bottom"/g) ?? []).length, 1);
-  assert.equal((html.match(/class="vertical-project-marquee__statement"/g) ?? []).length, 1);
-  assert.equal((html.match(/class="vertical-project-marquee__statement-line"/g) ?? []).length, 2);
-  assert.match(html, /aria-label="AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。"/);
-  assert.equal((html.match(/class="vertical-project-marquee__image"/g) ?? []).length, 32);
+  assert.equal((html.match(/data-drift-wall="true"/g) ?? []).length, 1);
+  assert.match(html, /id="process-drift-wall"/);
+  assert.equal((html.match(/class="drift-wall__column"/g) ?? []).length, 5);
+  assert.equal((html.match(/class="drift-wall__cap is-top"/g) ?? []).length, 1);
+  assert.equal((html.match(/class="drift-wall__cap is-bottom"/g) ?? []).length, 1);
+  assert.equal((html.match(/class="drift-wall__image"/g) ?? []).length, 60);
+  assert.equal((html.match(/loading="eager"/g) ?? []).length, 60);
   assert.match(html, /\/portfolio\/consumer\/boards\/frame-04\.webp/);
   assert.match(html, /\/portfolio\/enterprise\/boards\/frame-14\.webp/);
   assert.match(html, /\/portfolio\/campaign\/boards\/frame-02\.webp/);
   assert.match(html, /-960\.webp/);
+  assert.doesNotMatch(html, /vertical-project-marquee__statement/);
+  assert.doesNotMatch(html, /AI 帮我更快地产生可能性；研究证据、体验判断与最终责任仍由我承担。/);
   assert.doesNotMatch(html, /scroll-reveal process-board__conclusion/);
 
-  const marqueeCss = fs.readFileSync(
-    path.join(process.cwd(), "src", "components", "VerticalProjectMarquee.css"),
+  const driftWallCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "components", "DriftWall.css"),
     "utf8",
   );
   assert.match(
-    marqueeCss,
-    /\.vertical-project-marquee\s*\{[^}]*background:\s*#08090b;/s,
+    driftWallCss,
+    /\.drift-wall\s*\{[^}]*perspective:\s*var\(--drift-perspective/s,
   );
   assert.match(
-    marqueeCss,
-    /\.vertical-project-marquee__window\s*\{[^}]*inset:\s*0;/s,
+    driftWallCss,
+    /\.drift-wall__plane\s*\{[^}]*transform-style:\s*preserve-3d/s,
+  );
+  assert.match(
+    driftWallCss,
+    /\.drift-wall__column\s*\{[^}]*overflow:\s*visible/s,
+  );
+  assert.match(
+    driftWallCss,
+    /\.drift-wall__media\.is-active\s*\{[^}]*transform:\s*translate3d\(0,\s*-12px,\s*var\(--drift-lift,\s*76px\)\)/s,
+  );
+  assert.match(driftWallCss, /--drift-tile-width:\s*264px/);
+  assert.match(driftWallCss, /--drift-tile-height:\s*169\.4px/);
+  assert.match(driftWallCss, /--drift-gap:\s*12px/);
+  assert.match(driftWallCss, /--drift-radius:\s*16px/);
+  assert.match(driftWallCss, /filter:\s*grayscale\(var\(--drift-grayscale,\s*1\)\)/);
+  assert.match(
+    driftWallCss,
+    /\.drift-wall__media\.is-active\s*\{[^}]*filter:\s*grayscale\(0\)/s,
+  );
+  assert.match(
+    driftWallCss,
+    /@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1024px\)[\s\S]*\.drift-wall__column:nth-child\(n \+ 5\)/s,
+  );
+  assert.match(
+    driftWallCss,
+    /@media\s*\(max-width:\s*767px\)[\s\S]*\.drift-wall__column:nth-child\(n \+ 3\)/s,
   );
 });
 

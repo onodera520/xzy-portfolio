@@ -10,6 +10,8 @@
   --dark-text: #111310;
   --radius: 24px;
   --shell: 1700px;
+  --portfolio-content-max: 1530px;
+  --portfolio-content-width: min(calc(90% - clamp(43.2px, 6.3vw, 118.8px)), var(--portfolio-content-max));
   --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
   --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -2480,16 +2482,16 @@ a.demo-open-link:focus-visible {
     gap: 24px;
   }
 
-  .home-page .section-heading h2 {
+  .home-page .work-section .section-heading h2 {
     font-size: clamp(48px, 14vw, 72px);
   }
 
-  .home-page .accordion-gallery {
+  .home-page .work-section .accordion-gallery {
     padding: 7px;
     border-radius: 26px;
   }
 
-  .home-page .contact-inner {
+  .home-page .contact-section .contact-inner {
     width: calc(100% - 32px);
     padding: 42px 20px;
     border-radius: 26px;
@@ -2503,7 +2505,7 @@ a.demo-open-link:focus-visible {
     margin-bottom: 46px;
   }
 
-  .home-page .contact-inner h2 {
+  .home-page .contact-section .contact-inner h2 {
     font-size: clamp(48px, 13.2vw, 68px);
   }
 
@@ -2709,6 +2711,258 @@ body {
   width: 21px;
   height: 21px;
   display: block;
+}
+
+/* Portfolio content scale: desktop and tablet only */
+@media (min-width: 768px) {
+  .home-page .about-section > .shell,
+  .home-page .project-gallery-shell,
+  .home-page .process-board__shell,
+  .home-page .contact-section .contact-inner,
+  .footer .footer-inner,
+  .board-shell,
+  .case-page.shell,
+  .case-flowing-menu {
+    width: var(--portfolio-content-width);
+    max-width: var(--portfolio-content-max);
+    margin-inline: auto;
+  }
+
+  .home-page .about-section,
+  .home-page .work-section {
+    padding-block: clamp(108px, 10.8vw, 198px);
+  }
+
+  .home-page .about-section {
+    padding-bottom: clamp(79px, 8.1vw, 144px);
+  }
+
+  .home-page .work-section {
+    padding-top: clamp(72px, 7.2vw, 126px);
+  }
+
+  .editorial-about {
+    border-radius: 22px;
+  }
+
+  .editorial-about__info {
+    padding: clamp(25px, 4.05vw, 68px);
+    padding-bottom: clamp(29px, 2.7vw, 47px);
+  }
+
+  .editorial-about__header h2 {
+    margin-top: clamp(20px, 2.7vw, 40px);
+    font-size: clamp(47px, 5.4vw, 94px);
+  }
+
+  .editorial-about__english-name {
+    font-size: clamp(16px, 1.35vw, 23px);
+  }
+
+  .editorial-about__intro {
+    margin-top: clamp(29px, 3.6vw, 52px);
+    font-size: clamp(14px, 1.035vw, 18px);
+  }
+
+  .editorial-about__section {
+    margin-top: clamp(31px, 3.15vw, 49px);
+    padding-top: clamp(22px, 2.25vw, 32px);
+  }
+
+  .editorial-about__education li,
+  .editorial-about__job,
+  .editorial-about__achievements li,
+  .editorial-about__strength p {
+    font-size: clamp(13px, 0.9vw, 15px);
+  }
+
+  .editorial-about__contacts {
+    gap: 16px;
+    padding: clamp(22px, 2.16vw, 34px) clamp(20px, 2.25vw, 34px);
+  }
+
+  .editorial-about__portrait {
+    min-height: 828px;
+  }
+
+  .editorial-about__portrait-stage {
+    --portrait-headroom: clamp(108px, 9.9vw, 171px);
+  }
+
+  .home-page .section-heading {
+    margin-bottom: clamp(58px, 7.2vw, 108px);
+  }
+
+  .home-page .work-section .section-heading h2 {
+    font-size: clamp(56px, 6.3vw, 113px);
+  }
+
+  .home-page .section-heading-row {
+    margin-top: clamp(29px, 3.6vw, 58px);
+    gap: clamp(29px, 5.4vw, 90px);
+  }
+
+  .home-page .section-heading-row > .home-reveal {
+    width: min(100%, 504px);
+  }
+
+  .home-page .section-heading-row p {
+    font-size: clamp(14px, 1.125vw, 18px);
+  }
+
+  .home-page .work-section .accordion-gallery {
+    padding: 9px;
+    border-radius: 27px;
+  }
+
+  .home-page .process-board.section {
+    padding-top: clamp(108px, 10.8vw, 198px);
+  }
+
+  .process-board__heading {
+    margin-top: clamp(27px, 3.6vw, 58px);
+    gap: clamp(43px, 6.3vw, 108px);
+  }
+
+  .home-page .process-board__heading h2 {
+    font-size: clamp(56px, 6.3vw, 113px);
+  }
+
+  .process-board__heading .scroll-reveal {
+    max-width: 486px;
+    font-size: clamp(18px, 1.44vw, 25px);
+  }
+
+  .process-steps {
+    margin-top: clamp(58px, 6.3vw, 106px);
+    gap: 13px;
+  }
+
+  .process-step-card {
+    min-height: 306px;
+    border-radius: 18px;
+  }
+
+  .process-step-card > article {
+    padding: clamp(20px, 1.8vw, 29px);
+  }
+
+  .process-step-card h3 {
+    font-size: clamp(23px, 1.53vw, 29px);
+  }
+
+  .process-step-card dd,
+  .process-evidence__copy dd {
+    font-size: 13px;
+  }
+
+  .process-evidence__heading {
+    margin-top: clamp(99px, 10.8vw, 189px);
+  }
+
+  .process-evidence__heading h3 {
+    max-width: 621px;
+    font-size: clamp(34px, 3.96vw, 68px);
+  }
+
+  .process-evidence-grid {
+    margin-top: clamp(38px, 4.5vw, 70px);
+    gap: 14px;
+  }
+
+  .process-evidence-card {
+    border-radius: 20px;
+  }
+
+  .process-evidence__copy {
+    padding: clamp(22px, 2.25vw, 34px) clamp(13px, 1.44vw, 22px) clamp(16px, 1.8vw, 27px);
+  }
+
+  .process-evidence__title-row h3 {
+    font-size: clamp(24px, 1.8vw, 32px);
+  }
+
+  .process-board .drift-wall {
+    width: 100%;
+    min-height: clamp(594px, 46.8vw, 738px);
+    margin-top: clamp(50px, 5.4vw, 86px);
+  }
+
+  .home-page .contact-section .contact-inner {
+    padding: clamp(50px, 4.5vw, 76px) 0 clamp(41px, 3.6vw, 65px);
+  }
+
+  .home-page .contact-inner > p {
+    margin-bottom: clamp(63px, 9vw, 144px);
+    font-size: 11px;
+  }
+
+  .home-page .contact-section .contact-inner h2 {
+    max-width: 1170px;
+    font-size: clamp(52px, 7.65vw, 135px);
+  }
+
+  .home-page .contact-heading-row {
+    margin-top: clamp(29px, 3.6vw, 58px);
+    gap: clamp(29px, 5.4vw, 90px);
+  }
+
+  .home-page .contact-bottom {
+    margin-top: clamp(63px, 8.1vw, 126px);
+    padding-top: 23px;
+  }
+
+  .footer,
+  .footer-inner {
+    min-height: 126px;
+  }
+
+  .footer strong {
+    font-size: 22px;
+  }
+
+  .board-case {
+    --board-gap: 25px;
+  }
+
+  .board-case-toolbar {
+    min-height: 139px;
+    padding-top: 85px;
+  }
+
+  .board-case-toolbar a {
+    font-size: 13px;
+  }
+
+  .case-reader-layout {
+    padding-block: clamp(25px, 2.7vw, 43px);
+    grid-template-columns: clamp(162px, 11.7vw, 198px) minmax(0, 1fr);
+    gap: clamp(22px, 2.7vw, 50px);
+  }
+
+  .case-page.shell {
+    padding-top: 153px;
+    padding-bottom: 108px;
+  }
+
+  .case-flowing-menu {
+    border-radius: 24px 24px 0 0;
+  }
+
+  .case-flowing-menu .flowing-menu {
+    height: clamp(378px, 41.4vw, 576px);
+  }
+}
+/* End portfolio content scale */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .editorial-about__portrait {
+    min-height: clamp(558px, 70.2vw, 684px);
+  }
+
+  .editorial-about__portrait-stage {
+    --portrait-headroom: clamp(58px, 7.2vw, 86px);
+  }
 }
 
 .home-page .hero {

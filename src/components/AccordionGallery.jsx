@@ -13,6 +13,7 @@ export default function AccordionGallery({
   overlayColor = "#060a0c",
   textColor = "#ffffff",
   height = 520,
+  mobileHeight = height,
   gap = 14,
   radius = 24,
   expandRatio = 0.52,
@@ -48,6 +49,7 @@ export default function AccordionGallery({
     const grow = count > 1 ? (ratio * (count - 1)) / (1 - ratio) : 1;
     const rect = element.getBoundingClientRect();
     const styles = window.getComputedStyle(element);
+    const targetHeight = window.innerWidth <= 767 ? mobileHeight : height;
     const paddingLeft = Number.parseFloat(styles.paddingLeft) || 0;
     const paddingRight = Number.parseFloat(styles.paddingRight) || 0;
     const horizontalLayout = vertical
@@ -56,7 +58,7 @@ export default function AccordionGallery({
           width: element.clientWidth,
           paddingLeft,
           paddingRight,
-          height,
+          height: targetHeight,
           count,
           gap,
           activeIndex: active,
@@ -65,7 +67,7 @@ export default function AccordionGallery({
     const mediaSize = horizontalLayout
       ? horizontalLayout.activeWidth
       : Math.max(140, verticalUsableSize * ratio * 1.22);
-    const galleryHeight = vertical ? Math.round(height * 1.08) : horizontalLayout.galleryHeight;
+    const galleryHeight = vertical ? Math.round(targetHeight * 1.08) : horizontalLayout.galleryHeight;
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     const animationDuration = animate && !reducedMotion ? duration : 0;
 
@@ -155,7 +157,7 @@ export default function AccordionGallery({
     });
 
     timelineRef.current = timeline;
-  }, [active, count, duration, ease, expandRatio, gap, grayscale, height, parallax, stagger, tilt, vertical]);
+  }, [active, count, duration, ease, expandRatio, gap, grayscale, height, mobileHeight, parallax, stagger, tilt, vertical]);
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 520px)");
@@ -199,6 +201,10 @@ export default function AccordionGallery({
     }
   };
 
+  const initialHeight = typeof window !== "undefined" && window.innerWidth <= 767
+    ? mobileHeight
+    : height;
+
   return (
     <div
       ref={rootRef}
@@ -209,7 +215,7 @@ export default function AccordionGallery({
         "--ag-text": textColor,
         "--ag-gap": `${gap}px`,
         "--ag-radius": `${radius}px`,
-        height: `${vertical ? Math.round(height * 1.08) : height}px`,
+        height: `${vertical ? Math.round(initialHeight * 1.08) : initialHeight}px`,
       }}
       role="list"
       aria-label="作品案例"

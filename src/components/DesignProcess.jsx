@@ -2,7 +2,7 @@ import BlurText from "./BlurText.jsx";
 import FadeContent from "./FadeContent.jsx";
 import ScrollReveal from "./ScrollReveal.jsx";
 import SpotlightCard from "./SpotlightCard.jsx";
-import VerticalProjectMarquee from "./VerticalProjectMarquee.jsx";
+import DriftWall from "./DriftWall.jsx";
 import { designProcess } from "../data/designProcess.js";
 
 import "./DesignProcess.css";
@@ -120,10 +120,25 @@ export default function DesignProcess() {
         </div>
 
       </div>
-      <VerticalProjectMarquee
+      <DriftWall
         images={designProcess.marqueeImages}
-        statement={designProcess.conclusion}
-        velocity={18}
+        columns={5}
+        speed={40}
+        variance={0.45}
+        tilt={0}
+        turn={0}
+        roll={0}
+        perspective={1000}
+        depth={130}
+        parallax={1}
+        overlay="#000000"
+        gap={12}
+        radius={16}
+        lift={76}
+        fade={0.6}
+        dim={0.8}
+        grayscale
+        pauseOnHover
       />
     </section>
   );
