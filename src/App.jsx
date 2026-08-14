@@ -23,6 +23,7 @@ import { aboutProfile } from "./data/aboutProfile.js";
 import { getProject, homeSectionIds, projectGalleryItems } from "./data/projects.js";
 import { sidebarMenuGroups, sidebarStatusText } from "./data/sidebarMenu.js";
 import { useBrandContrast } from "./hooks/useBrandContrast.js";
+import { resolveBrandContrast } from "./lib/brandContrast.js";
 
 const SIDEBAR_LAYER_COLORS = ["#0B0B0B", "#454541", "#C8C6BF"];
 
@@ -90,8 +91,9 @@ export function scheduleHomeHashScroll({
   };
 }
 
-function Navigation({ homeLinks = false, inverted = false }) {
-  const brandContrast = useBrandContrast({ defaultTheme: "light" });
+function Navigation({ homeLinks = false, inverted = false, fixedBrandContrast }) {
+  const detectedBrandContrast = useBrandContrast({ defaultTheme: "light" });
+  const brandContrast = resolveBrandContrast(detectedBrandContrast, fixedBrandContrast);
   const { contactOpen, openContactDialog } = useContactDialog();
   const anchor = homeLinks ? "#" : "/#";
   const items = [
@@ -106,6 +108,7 @@ function Navigation({ homeLinks = false, inverted = false }) {
       <header
         className={`site-nav${inverted ? " site-nav-solid" : ""}`}
         data-brand-contrast={brandContrast}
+        data-brand-contrast-mode={fixedBrandContrast === undefined ? "adaptive" : "fixed"}
       >
         <div className="nav-inner shell">
         <div className="nav-brand">

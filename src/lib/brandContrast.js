@@ -5,6 +5,12 @@ export function normalizeBrandContrast(value, fallback = "light") {
   return VALID_THEMES.has(fallback) ? fallback : "light";
 }
 
+export function resolveBrandContrast(detectedTheme, fixedTheme) {
+  return fixedTheme === undefined
+    ? normalizeBrandContrast(detectedTheme)
+    : normalizeBrandContrast(fixedTheme, detectedTheme);
+}
+
 export function selectBrandContrast(regions, sampleY, fallback = "light") {
   let theme = normalizeBrandContrast(undefined, fallback);
 

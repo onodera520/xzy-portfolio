@@ -132,6 +132,25 @@ test("home and case pages render declared light and dark brand regions", async (
   }
 });
 
+test("case pages lock the brand dark while the homepage stays adaptive", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.match(
+    homeHtml,
+    /<header[^>]*data-brand-contrast="light"[^>]*data-brand-contrast-mode="adaptive"/,
+  );
+
+  for (const slug of ["consumer", "enterprise", "campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: `/work/${slug}` }));
+    assert.match(
+      html,
+      /<header[^>]*data-brand-contrast="light"[^>]*data-brand-contrast-mode="fixed"/,
+      slug,
+    );
+  }
+});
+
 test("every complete artboard is local and parseable", async () => {
   const { projects } = await import("../src/data/projects.js");
   const importedProjects = projects.filter((project) => project.frames);

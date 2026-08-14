@@ -27,7 +27,7 @@ export function FigmaCaseStudy({ project, Navigation }) {
       data-brand-region="true"
       data-brand-contrast="light"
     >
-      <Navigation inverted />
+      <Navigation inverted fixedBrandContrast="light" />
       <main>
         <div className="board-case-toolbar board-shell">
           <a href="/#work">← 返回作品</a>

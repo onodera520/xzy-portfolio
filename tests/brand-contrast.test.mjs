@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   normalizeBrandContrast,
+  resolveBrandContrast,
   selectBrandContrast,
 } from "../src/lib/brandContrast.js";
 
@@ -11,6 +12,11 @@ test("brand contrast normalizes invalid input to the requested fallback", () => 
   assert.equal(normalizeBrandContrast("dark", "light"), "dark");
   assert.equal(normalizeBrandContrast("sepia", "dark"), "dark");
   assert.equal(normalizeBrandContrast(undefined, "sepia"), "light");
+});
+
+test("fixed brand contrast overrides detection without changing adaptive pages", () => {
+  assert.equal(resolveBrandContrast("dark", "light"), "light");
+  assert.equal(resolveBrandContrast("dark"), "dark");
 });
 
 test("brand contrast follows the region containing the navigation sample line", () => {

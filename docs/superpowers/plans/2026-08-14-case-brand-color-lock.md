@@ -2,71 +2,123 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 让所有作品详情页左上菜单按钮与“XUE STUDIO”在滚动期间始终保持黑色。
+**Goal:** 让所有作品详情页左上菜单按钮与“XUE STUDIO”在滚动期间始终保持黑色，同时保留首页动态明暗适配。
 
-**Architecture:** 保留现有 `useBrandContrast` 动态检测，让首页继续根据背景明暗切换品牌色；仅在 `.board-case` 作用域内覆盖 `--brand-contrast-color`。使用一个样式回归测试同时锁定普通状态和 `data-brand-contrast="dark"` 状态。
+**Architecture:** 在现有品牌对比度数据流中加入可选固定值：检测逻辑仍产生 `detectedContrast`，`resolveBrandContrast` 在作品详情页有固定值时优先返回固定值，否则返回检测值。详情页通过导航参数选择固定 `light` 模式，首页保持 adaptive 模式。
 
-**Tech Stack:** React 19、CSS、Node.js 内置测试运行器、Vite 8
+**Tech Stack:** React 19、JavaScript、Node.js 内置测试运行器、Vite 8
 
 ## Global Constraints
 
-- 适用于 C 端、B 端和 H5 等所有使用 `.board-case` 容器的作品详情页。
-- 只固定左上 `.nav-brand` 区域，包括菜单触发按钮和“XUE STUDIO”文字。
-- 首页及其他非作品详情页继续保留现有的明暗对比度自适应行为。
+- 仅 C 端、B 端和 H5 等使用 `.board-case` 的作品详情页固定品牌颜色。
+- 固定范围只有菜单触发按钮和“XUE STUDIO”文字。
+- 首页及其他非作品详情页继续保留现有明暗对比度自适应行为。
 - 不修改中间导航胶囊、右侧图标、章节导航、作品图片、滚动动画或菜单交互。
 - 不新增依赖。
 
 ---
 
-### Task 1: 锁定作品详情页品牌颜色
+### Task 1: 增加可测试的固定对比度解析
 
 **Files:**
-- Modify: `tests/portfolio.test.mjs`
-- Modify: `src/styles.css`
+- Modify: `tests/brand-contrast.test.mjs`
+- Modify: `src/lib/brandContrast.js`
 
 **Interfaces:**
-- Consumes: `.board-case` 详情页容器、`.site-nav[data-brand-contrast]` 动态状态、`.nav-brand` 的 `--brand-contrast-color` 变量。
-- Produces: 作品详情页专属颜色覆盖；不新增 JavaScript 接口。
+- Consumes: `detectedTheme: "light" | "dark"`、可选 `fixedTheme: "light" | "dark" | undefined`。
+- Produces: `resolveBrandContrast(detectedTheme, fixedTheme): "light" | "dark"`。
 
-- [ ] **Step 1: 写入失败的样式回归测试**
-
-在 `tests/portfolio.test.mjs` 增加：
+- [x] **Step 1: 写入失败测试**
 
 ```js
-test("portfolio detail brand stays ink-colored across adaptive contrast states", () => {
-  const css = fs.readFileSync(path.join(process.cwd(), "src", "styles.css"), "utf8");
-
-  assert.match(
-    css,
-    /\.board-case \.nav-brand,\s*\.board-case \.site-nav\[data-brand-contrast="dark"\] \.nav-brand\s*\{[^}]*--brand-contrast-color:\s*var\(--bloom-ink\)/s,
-  );
+test("fixed brand contrast overrides detection without changing adaptive pages", () => {
+  assert.equal(resolveBrandContrast("dark", "light"), "light");
+  assert.equal(resolveBrandContrast("dark"), "dark");
 });
 ```
 
-- [ ] **Step 2: 运行聚焦测试并确认失败**
+- [x] **Step 2: 运行测试并确认因缺少导出而失败**
 
-Run: `node --test --test-name-pattern="portfolio detail brand stays ink-colored" tests/portfolio.test.mjs`
+Run: `node --test --test-name-pattern="fixed brand contrast" tests/brand-contrast.test.mjs`
 
-Expected: FAIL，提示 `src/styles.css` 不匹配作品详情页颜色覆盖正则。
+Expected: FAIL，提示 `resolveBrandContrast` 未导出。
 
-- [ ] **Step 3: 加入最小样式覆盖**
+- [x] **Step 3: 实现最小解析函数**
 
-在 `src/styles.css` 现有 `.board-case .site-nav-solid` 规则附近加入：
-
-```css
-.board-case .nav-brand,
-.board-case .site-nav[data-brand-contrast="dark"] .nav-brand {
-  --brand-contrast-color: var(--bloom-ink);
+```js
+export function resolveBrandContrast(detectedTheme, fixedTheme) {
+  return fixedTheme === undefined
+    ? normalizeBrandContrast(detectedTheme)
+    : normalizeBrandContrast(fixedTheme, detectedTheme);
 }
 ```
 
-- [ ] **Step 4: 运行聚焦测试并确认通过**
+- [x] **Step 4: 运行聚焦测试并确认通过**
 
-Run: `node --test --test-name-pattern="portfolio detail brand stays ink-colored" tests/portfolio.test.mjs`
+Run: `node --test --test-name-pattern="fixed brand contrast" tests/brand-contrast.test.mjs`
 
 Expected: PASS，1 个测试通过，0 个失败。
 
-- [ ] **Step 5: 运行完整回归与构建**
+### Task 2: 只在作品详情页启用固定模式
+
+**Files:**
+- Modify: `tests/portfolio.test.mjs`
+- Modify: `src/App.jsx`
+- Modify: `src/components/FigmaCaseStudy.jsx`
+
+**Interfaces:**
+- Consumes: `Navigation({ fixedBrandContrast?: "light" | "dark" })`、`resolveBrandContrast`。
+- Produces: 详情页导航 `data-brand-contrast="light" data-brand-contrast-mode="fixed"`；首页导航 `data-brand-contrast-mode="adaptive"`。
+
+- [x] **Step 1: 写入失败的路由行为测试**
+
+```js
+test("case pages lock the brand dark while the homepage stays adaptive", async () => {
+  const { default: App } = await vite.ssrLoadModule("/src/App.jsx");
+  const homeHtml = renderToStaticMarkup(React.createElement(App, { initialPath: "/" }));
+
+  assert.match(homeHtml, /<header[^>]*data-brand-contrast="light"[^>]*data-brand-contrast-mode="adaptive"/);
+  for (const slug of ["consumer", "enterprise", "campaign"]) {
+    const html = renderToStaticMarkup(React.createElement(App, { initialPath: `/work/${slug}` }));
+    assert.match(html, /<header[^>]*data-brand-contrast="light"[^>]*data-brand-contrast-mode="fixed"/, slug);
+  }
+});
+```
+
+- [x] **Step 2: 运行测试并确认因缺少模式属性而失败**
+
+Run: `node --test --test-name-pattern="case pages lock the brand dark" tests/portfolio.test.mjs`
+
+Expected: FAIL，渲染的 header 不含 `data-brand-contrast-mode`。
+
+- [x] **Step 3: 接入固定参数**
+
+在 `Navigation` 中分别保留检测值与最终值：
+
+```jsx
+const detectedBrandContrast = useBrandContrast({ defaultTheme: "light" });
+const brandContrast = resolveBrandContrast(detectedBrandContrast, fixedBrandContrast);
+```
+
+在 header 上增加：
+
+```jsx
+data-brand-contrast-mode={fixedBrandContrast === undefined ? "adaptive" : "fixed"}
+```
+
+作品详情页调用：
+
+```jsx
+<Navigation inverted fixedBrandContrast="light" />
+```
+
+- [x] **Step 4: 运行聚焦测试并确认通过**
+
+Run: `node --test --test-name-pattern="case pages lock the brand dark" tests/portfolio.test.mjs`
+
+Expected: PASS，1 个测试通过，0 个失败。
+
+- [x] **Step 5: 运行完整回归与构建**
 
 Run: `npm.cmd test`
 
@@ -76,13 +128,13 @@ Run: `npm.cmd run build`
 
 Expected: Vite 构建退出码为 0；允许现有的大于 500 kB 分包提示，但不得新增构建错误。
 
-- [ ] **Step 6: 检查差异并提交**
+- [x] **Step 6: 检查差异并提交**
 
 Run: `git diff --check`
 
 Expected: 退出码为 0，没有空白字符错误。
 
 ```bash
-git add src/styles.css tests/portfolio.test.mjs
+git add docs/superpowers/specs/2026-08-14-case-brand-color-lock-design.md docs/superpowers/plans/2026-08-14-case-brand-color-lock.md src/lib/brandContrast.js src/App.jsx src/components/FigmaCaseStudy.jsx tests/brand-contrast.test.mjs tests/portfolio.test.mjs
 git commit -m "fix: keep case brand controls dark"
 ```
