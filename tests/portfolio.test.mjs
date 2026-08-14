@@ -668,8 +668,7 @@ test("process ending becomes a full-bleed DriftWall without a center statement p
   assert.equal((html.match(/data-drift-wall="true"/g) ?? []).length, 1);
   assert.match(html, /id="process-drift-wall"/);
   assert.equal((html.match(/class="drift-wall__column"/g) ?? []).length, 5);
-  assert.equal((html.match(/class="drift-wall__cap is-top"/g) ?? []).length, 1);
-  assert.equal((html.match(/class="drift-wall__cap is-bottom"/g) ?? []).length, 1);
+  assert.equal((html.match(/drift-wall__cap/g) ?? []).length, 0);
   assert.equal((html.match(/class="drift-wall__image"/g) ?? []).length, 60);
   assert.equal((html.match(/loading="eager"/g) ?? []).length, 60);
   assert.match(html, /\/portfolio\/consumer\/boards\/frame-04\.webp/);

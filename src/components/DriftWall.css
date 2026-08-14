@@ -88,26 +88,6 @@
   pointer-events: none;
 }
 
-.drift-wall__cap {
-  position: absolute;
-  right: 0;
-  left: 0;
-  z-index: 2;
-  height: clamp(54px, 4.5vw, 76px);
-  background: var(--drift-overlay, #000000);
-  pointer-events: none;
-}
-
-.drift-wall__cap.is-top {
-  top: 0;
-  border-radius: 0 0 clamp(34px, 4vw, 70px) clamp(34px, 4vw, 70px);
-}
-
-.drift-wall__cap.is-bottom {
-  bottom: 0;
-  border-radius: clamp(34px, 4vw, 70px) clamp(34px, 4vw, 70px) 0 0;
-}
-
 @media (hover: hover) and (pointer: fine) {
   .drift-wall__tile.is-active {
     z-index: 4;
@@ -147,9 +127,6 @@
     display: none;
   }
 
-  .drift-wall__cap {
-    height: 56px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -217,7 +217,6 @@ export default function DriftWall({
         setActiveId(null);
       }}
     >
-      <div className="drift-wall__cap is-top" aria-hidden="true" />
       <div ref={planeRef} className="drift-wall__plane" aria-hidden="true">
         {columnImages.map((imagesForColumn, columnIndex) => (
           <DriftColumn
@@ -236,7 +235,6 @@ export default function DriftWall({
         ))}
       </div>
       <div className="drift-wall__scrim" aria-hidden="true" />
-      <div className="drift-wall__cap is-bottom" aria-hidden="true" />
     </section>
   );
 }
